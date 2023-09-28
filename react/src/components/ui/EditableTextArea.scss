@@ -1,0 +1,24 @@
+.editable-text-area-inactive {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+  border-radius: 0.28em;
+  color: white;
+  background-color: transparent;
+  padding: 0.5em;
+  &.disabled {
+    cursor: not-allowed;
+  }
+}
+
+.editable-text-area-inactive:hover {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.editable-text-area-active {
+  flex: 1;
+  outline: none;
+  border-radius: 0.28em;
+  border: 1px solid #85b7d9;
+  padding: 0.5em;
+}

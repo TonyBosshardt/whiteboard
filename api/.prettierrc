@@ -1,0 +1,8 @@
+{
+  "singleQuote": true,
+  "printWidth": 100,
+  "importOrder": ["\\./.+js$", "(c|sc)ss$", ".graphql$", "json$"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": false
+}

@@ -1,0 +1,28 @@
+.editable-header-container {
+  height: 39.5px; // height of semantic input element
+  &.no-set-height {
+    height: unset;
+  }
+}
+
+.editable-header {
+  cursor: text;
+  flex: 1;
+  border-radius: 0.28em;
+  padding: 0 0.5em 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  &.inverted {
+    color: white;
+    font-size: 0.9em;
+  }
+  &.disabled {
+    cursor: not-allowed;
+  }
+}
+
+.editable-header:hover {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  &.inverted {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
