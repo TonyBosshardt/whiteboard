@@ -1,20 +1,21 @@
 import { gql, useMutation } from '@apollo/client';
-import React, { useRef, useState } from 'react';
-import { Button, Checkbox, Dropdown, Icon, Popup } from 'semantic-ui-react';
+import classNames from 'classnames';
+import React, { useState } from 'react';
+import { Button, Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
 
-import DateHelpers, {
-  SQL_DATE_TIME_FORMAT,
-  STANDARD_DATE_TIME_FORMAT,
-} from '../../util/DateHelpers.js';
+import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import EditableHeader from '../ui/EditableHeader.js';
 import EditableTextArea from '../ui/EditableTextArea.js';
+import InvertedDropdown from '../ui/InvertedDropdown.js';
 
 const TASK_UPDATE = gql`
   mutation TASK_UPDATE($input: TaskCreateInput!, $id: ID!) {
     taskUpdate(input: $input, id: $id) {
       id
       title
+      daysPutOff
       description
+      originalDueDatetime
       dueDatetime
       insertDatetime
       completeDatetime
@@ -27,8 +28,18 @@ const TASK_UPDATE = gql`
 `;
 
 const TaskItem = ({ task, isDayMode, tags }) => {
-  const { id, title, description, dueDatetime, insertDatetime, completeDatetime, status, tag } =
-    task;
+  const {
+    id,
+    title,
+    description,
+    dueDatetime,
+    daysPutOff,
+    originalDueDatetime,
+    insertDatetime,
+    completeDatetime,
+    status,
+    tag,
+  } = task;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickEditTitle, setIsQuickEditTitle] = useState(false);
@@ -112,7 +123,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
               }}
             />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col" style={{ marginBottom: '0.25em' }}>
             <span style={{ fontSize: '0.75rem' }}>Description</span>
             <EditableTextArea
               inverted
@@ -125,23 +136,9 @@ const TaskItem = ({ task, isDayMode, tags }) => {
               }
             />
           </div>
-          <div className="flex flex-col">
-            <span
-              style={{
-                fontSize: '0.75rem',
-              }}
-            >
-              Tag
-            </span>
-            <Dropdown
-              style={{
-                backgroundColor: 'transparent',
-                color: 'white',
-                paddingLeft: '0.5em',
-              }}
-              className="inverted-dropdown"
-              search
-              selection
+          <div className="flex flex-col" style={{ marginBottom: '0.25em' }}>
+            <span style={{ fontSize: '0.75rem' }}>Tag</span>
+            <InvertedDropdown
               options={tags.map((t) => ({ text: t.title, value: t.id }))}
               value={tag?.id}
               loading={isLoading}
@@ -151,6 +148,32 @@ const TaskItem = ({ task, isDayMode, tags }) => {
                 })
               }
             />
+          </div>
+          <div className="flex">
+            <div className="flex flex-col" style={{ margin: 'auto auto 0 0' }}>
+              <span style={{ fontSize: '0.75rem' }}>Original Due Date</span>
+              <Header
+                className="text-white"
+                style={{ fontSize: '0.9em', margin: 0, padding: '0 0 0 0.75em' }}
+              >
+                {DateHelpers.convertToDateTime(originalDueDatetime).toFormat('LLL dd')}
+              </Header>
+            </div>
+            <div className="flex flex-col" style={{ margin: 'auto auto 0 auto' }}>
+              <span style={{ fontSize: '0.75rem' }}>Completion Date</span>
+              <Header
+                className="text-white"
+                style={{ fontSize: '0.9em', margin: 0, padding: '0 0 0 0.75em' }}
+              >
+                {completeDatetime
+                  ? DateHelpers.convertToDateTime(completeDatetime).toFormat('LLL dd')
+                  : '-'}
+              </Header>
+            </div>
+            <div className={classNames('procrastination-badge', { active: !!daysPutOff })}>
+              {!!daysPutOff && <Icon name="exclamation circle" color="red" />} Days Put Off:{' '}
+              {daysPutOff}
+            </div>
           </div>
           <div className="flex" style={{ marginTop: '1em' }}>
             <div style={{ margin: 'auto 0 0 auto' }}>

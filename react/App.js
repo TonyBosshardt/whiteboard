@@ -6,6 +6,7 @@ import { HashRouter } from 'react-router-dom';
 import RootRouter from './src/RootRouter.js';
 
 import './index.scss';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const client = new ApolloClient({
   uri: 'http://localhost:4000/',

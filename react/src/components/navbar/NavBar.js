@@ -42,21 +42,7 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
   const tags = data?.tags || [];
 
   const [onCreateTask] = useMutation(QUICK_CREATE_TASK, {
-    refetchQueries: [
-      {
-        query: GET_TASKS,
-      },
-    ],
-    onCompleted: (taskCreateData) => {
-      if (taskCreateData?.tasksCreate) {
-        const [{ id }] = taskCreateData.tasksCreate;
-        const newTaskElem = document.getElementById(id);
-        console.log(newTaskElem, taskCreateData.tasksCreate);
-        if (newTaskElem) {
-          newTaskElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    },
+    refetchQueries: [{ query: GET_TASKS }],
   });
 
   const [selectedTagId, setSelectedTagId] = useState('');
@@ -170,8 +156,12 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
           options={MODE_OPTIONS.map((m) => ({ text: _.startCase(m), value: m }))}
           onChange={(e, { value }) => onChangeMode(value)}
         />
-        <div className="flex" style={{ margin: 'auto 0 auto 0', color: 'white' }}>
-          <DateSelector effectiveCurrentDatetime={effectiveCurrentDatetime} />
+        <div className="flex text-white" style={{ margin: 'auto 0 auto 0' }}>
+          <DateSelector
+            effectiveCurrentDatetime={effectiveCurrentDatetime}
+            replaceQueryParamValue={replaceQueryParamValue}
+            setQueryParamObject={setQueryParamObject}
+          />
           <div className="flex" style={{ margin: 'auto 0 auto 0' }}>
             <Button icon="arrow left" circular onClick={() => onIncrement(-1)} />
             <Button icon="arrow right" circular onClick={() => onIncrement(1)} />

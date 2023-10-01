@@ -31,15 +31,17 @@ const typeDefs = `#graphql
 
   type Task {
     id: ID
-    user: User
-    title: String
+    completeDatetime: DateTime
+    daysPutOff: Int # generated column, 
     description: String
-    tag: Tag
+    dueDatetime: DateTime
+    originalDueDatetime: DateTime
     project: Project
     status: String
-    dueDatetime: DateTime
+    tag: Tag
+    title: String
+    user: User
     insertDatetime: DateTime
-    completeDatetime: DateTime
   }
 
   # MUTATION INPUTS

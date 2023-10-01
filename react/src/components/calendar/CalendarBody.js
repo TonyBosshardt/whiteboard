@@ -8,7 +8,7 @@ import WeekdayHeader from './WeekdayHeader.js';
 
 const ROOT_DIV_HEIGHT = '100vh';
 const TOP_MARGIN = '5em';
-const DAY_HEADER_HEIGHT = '24.1px';
+const DAY_HEADER_HEIGHT_PX = '24.1';
 
 const CalendarBody = ({
   selectedMode,
@@ -26,7 +26,10 @@ const CalendarBody = ({
     effectiveWindowSize,
   });
 
-  const weekHeight = `calc((${ROOT_DIV_HEIGHT} - ${TOP_MARGIN} - ${DAY_HEADER_HEIGHT}) / ${chunkedByWeek.length})`;
+  const weekHeight = `calc((${ROOT_DIV_HEIGHT} - ${TOP_MARGIN} - ${
+    isDayMode ? 0 : DAY_HEADER_HEIGHT_PX
+  }px) / ${chunkedByWeek.length})`;
+
   const tasksByISODate = _.groupBy(tasks, (t) =>
     DateHelpers.convertToDateTime(t.dueDatetime).toISODate(),
   );

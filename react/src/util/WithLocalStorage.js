@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 
 const WithLocalStorage = (WrappedComponent) => {
@@ -11,26 +10,10 @@ const WithLocalStorage = (WrappedComponent) => {
     }
 
     getValue(key, options = {}) {
-      const { defaultValue = null, isNumeric = false, filterExpiry = false } = options;
+      const { defaultValue = null, isNumeric = false } = options;
 
       const item =
         localStorage.getItem(key) || (defaultValue ? JSON.stringify(defaultValue) : null);
-
-      if (filterExpiry) {
-        const parsedItem = JSON.parse(item);
-
-        if (_.isArray(parsedItem)) {
-          const now = new Date();
-
-          const filtered = parsedItem.filter((a) => now.getTime() < a.expiry);
-
-          this.storeValue(key, filtered);
-
-          return filtered;
-        }
-
-        return parsedItem;
-      }
 
       if (isNumeric) {
         return +item;

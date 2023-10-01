@@ -19,6 +19,8 @@ export const GET_TASKS = gql`
     }
     tasks(userId: 1) {
       id
+      daysPutOff
+      originalDueDatetime
       user {
         id
         firstName
@@ -44,7 +46,9 @@ const TASK_UPDATE = gql`
     taskUpdate(input: $input, id: $id) {
       id
       title
+      daysPutOff
       description
+      originalDueDatetime
       dueDatetime
       insertDatetime
       completeDatetime

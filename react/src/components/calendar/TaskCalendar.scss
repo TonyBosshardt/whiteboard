@@ -19,14 +19,6 @@ $CURRENT_DAY_COLOR: #2185d0;
     min-width: 25em;
 }
 
-.inverted-dropdown {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.inverted-dropdown:hover {
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
 .task-calendar {
     .day-header-tray {
         // flex: 1;
@@ -42,14 +34,6 @@ $CURRENT_DAY_COLOR: #2185d0;
 
     .day-header-tray:hover {
         // border-bottom: 1px solid white;
-    }
-
-    .calendar-header {
-        padding: 0.5em 1em;
-    }
-
-    .resync-button {
-        margin: auto 0 auto 0;
     }
 
     .weekday-header {
@@ -240,5 +224,18 @@ $CURRENT_DAY_COLOR: #2185d0;
         &.open {
             transform: rotate(90deg);
         }
+    }
+}
+
+.procrastination-badge {
+    padding: 0.33em 0.55em 0.33em 0.55em;
+    margin: auto 0 0 auto;
+    border-radius: 0.28em;
+    font-size: 0.8em;
+    background-color: rgba(255, 255, 255, 0.15);
+
+    &.active {
+        background-color: rgb(219 40 40 / 25%);
+        outline: 1px solid rgb(219, 40, 40);
     }
 }
