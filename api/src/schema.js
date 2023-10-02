@@ -54,11 +54,9 @@ const typeDefs = `#graphql
     status: String
     completeDatetime: DateTime
     dueDatetime: DateTime
+    originalDueDatetime: DateTime
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
     task(id: ID!): Task
     tasks(userId: ID!, projectId: ID, tagId: ID): [Task]

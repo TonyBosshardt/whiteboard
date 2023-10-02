@@ -16,3 +16,11 @@ export const TASK_STATUS = {
   COMPLETE: 'complete',
   INCOMPLETE: 'incomplete',
 };
+
+export const KEYBOARD_CODES = {
+  ENTER: 'Enter',
+  SHIFT: 'Shift',
+  RIGHT_ARROW: 'right',
+  LEFT_ARROW: 'left',
+  E: 'e',
+};

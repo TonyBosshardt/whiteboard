@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import WithLocalStorage from '../../util/WithLocalStorage.js';
+import { KEYBOARD_CODES } from '../../util/constants.js';
 import TagItem from './TagItem.js';
 import TaskItem from './TaskItem.js';
 
@@ -20,8 +22,10 @@ const TaskContent = ({
   const totalTaskCount = completeTasks.length + incompleteTasks.length;
   const tasksAllComplete = completeTasks.length === totalTaskCount;
 
+  const localStorageTagId = makeLocalStorageKey(isoDate, tagId);
+
   const [isExpanded, _setIsExpanded] = useState(
-    getLocalValue(makeLocalStorageKey(isoDate, tagId), {
+    getLocalValue(localStorageTagId, {
       defaultValue: !tasksAllComplete ? 1 : 0,
       isNumeric: true,
     }),
@@ -30,11 +34,21 @@ const TaskContent = ({
   const setIsExpanded = (nextState) => {
     _setIsExpanded(nextState);
 
-    setLocalValue(makeLocalStorageKey(isoDate, tagId), nextState ? 1 : 0);
+    setLocalValue(localStorageTagId, nextState ? 1 : 0);
   };
 
+  useHotkeys([KEYBOARD_CODES.E], () => {
+    if (localStorageTagId === window.currentHoverTagSection) {
+      setIsExpanded(!isExpanded);
+    }
+  });
+
   return (
-    <div className="flex flex-col">
+    <div
+      className="flex flex-col"
+      onMouseEnter={() => (window.currentHoverTagSection = localStorageTagId)}
+      onMouseLeave={() => (window.currentHoverTagSection = null)}
+    >
       <TagItem
         tag={keyedTags[tagId]}
         tasksAllComplete={tasksAllComplete}

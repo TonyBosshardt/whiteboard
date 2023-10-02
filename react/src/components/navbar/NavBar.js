@@ -6,7 +6,7 @@ import { Button, Dropdown, Input } from 'semantic-ui-react';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import WithQueryStrings from '../../util/WithQueryStrings.js';
-import { KEYBOARD_SHORTCUTS, URL_PARAM_KEYS } from '../../util/constants.js';
+import { KEYBOARD_CODES, KEYBOARD_SHORTCUTS, URL_PARAM_KEYS } from '../../util/constants.js';
 import {
   MODES,
   MODE_OPTIONS,
@@ -119,8 +119,8 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
             onChange={(e, { value }) => setQuickAddText(value)}
             ref={inputRef}
             loading={isLoading}
-            onKeyPress={async (e) => {
-              if (e.key === 'Enter' && quickAddText && !isLoading) {
+            onKeyPress={async ({ key }) => {
+              if (key === KEYBOARD_CODES.ENTER && quickAddText && !isLoading) {
                 await handleCreateTask();
                 setQuickAddText('');
               }
@@ -143,11 +143,6 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
             labelPosition="left"
           />
         </div>
-        {/* <div className="flex" style={{ margin: 'auto 1em auto 0' }}>
-          <Button icon="plus" circular />
-          <Button icon="filter" circular />
-          <Button icon="search" circular />
-        </div> */}
         <Dropdown
           value={selectedMode}
           search

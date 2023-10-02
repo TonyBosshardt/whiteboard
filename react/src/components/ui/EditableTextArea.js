@@ -75,6 +75,11 @@ const EditableTextArea = ({
           className={classNames('editable-text-area-inactive flex', {
             disabled: disabled && showDisabledCursor,
           })}
+          onFocus={() => {
+            if (!disabled) {
+              setEdit(true);
+            }
+          }}
           onClick={() => {
             if (!disabled) {
               setEdit(true);

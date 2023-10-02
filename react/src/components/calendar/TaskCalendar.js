@@ -4,7 +4,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import WithQueryStrings from '../../util/WithQueryStrings.js';
-import { URL_PARAM_KEYS } from '../../util/constants.js';
+import { KEYBOARD_CODES, TASK_STATUS, URL_PARAM_KEYS } from '../../util/constants.js';
 import CalendarBody from './CalendarBody.js';
 import { MODES, resolveCurrentEffectiveDatetime } from './CalendarHelpers.js';
 
@@ -90,29 +90,26 @@ const TaskCalendar = ({ getQueryParamValue }) => {
   const tasks = data?.tasks || [];
   const tags = data?.tags || [];
 
-  useHotkeys(['shift+right'], () => {
+  const pushTask = async ({ direction }) => {
     const foundTask = tasks.find((t) => t.id === window.currentHoverTaskId);
-    if (!foundTask || foundTask?.status === 'complete') return null;
+
+    if (!foundTask || foundTask?.status === TASK_STATUS.COMPLETE) return null;
 
     return handleUpdateTask(foundTask.id, {
       dueDatetime: DateHelpers.convertToDateTime(foundTask.dueDatetime)
         .set({ hour: 12, minute: 0 })
-        .plus({ days: 1 })
+        .plus({ days: direction })
         .toFormat(SQL_DATE_TIME_FORMAT),
     });
-  });
+  };
 
-  useHotkeys(['shift+left'], () => {
-    const foundTask = tasks.find((t) => t.id === window.currentHoverTaskId);
-    if (!foundTask || foundTask?.status === 'complete') return null;
+  useHotkeys([`${KEYBOARD_CODES.SHIFT}+${KEYBOARD_CODES.RIGHT_ARROW}`], () =>
+    pushTask({ direction: 1 }),
+  );
 
-    return handleUpdateTask(foundTask.id, {
-      dueDatetime: DateHelpers.convertToDateTime(foundTask.dueDatetime)
-        .set({ hour: 12, minute: 0 })
-        .plus({ days: -1 })
-        .toFormat(SQL_DATE_TIME_FORMAT),
-    });
-  });
+  useHotkeys([`${KEYBOARD_CODES.SHIFT}+${KEYBOARD_CODES.LEFT_ARROW}`], () =>
+    pushTask({ direction: -1 }),
+  );
 
   return (
     <div

@@ -41,9 +41,11 @@ const TaskDay = ({
         {isDayMode && <strong style={{ margin: 'auto 5em auto 0' }}>{dayStr}</strong>}
         <TaskDayHeader
           dayOfMonth={dayOfMonth}
+          dateTime={dateTime}
           isToday={isToday}
           isDayMode={isDayMode}
           tasksForDate={tasksForDate}
+          tags={tags}
         />
       </div>
       <div
