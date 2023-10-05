@@ -1,7 +1,7 @@
 import { gql, useMutation } from '@apollo/client';
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import { Button, Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
+import { Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import EditableHeader from '../ui/EditableHeader.js';
@@ -174,7 +174,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
               {daysPutOff > 0 ? daysPutOff : 0}
             </div>
           </div>
-          <div className="flex" style={{ marginTop: '1em' }}>
+          {/* <div className="flex" style={{ marginTop: '1em' }}>
             <Button
               color="red"
               style={{ margin: 'auto auto auto 0', fontSize: '0.7em' }}
@@ -219,7 +219,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
                 </Button>
               </Button.Group>
             </div>
-          </div>
+          </div> */}
         </div>
       }
     />

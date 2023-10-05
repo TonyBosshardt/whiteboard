@@ -25,14 +25,47 @@ const QUICK_CREATE_TASK = gql`
   }
 `;
 
+const resolveQueryVariables = ({ selectedMode, effectiveCurrentDatetime }) => {
+  const fromDate = effectiveCurrentDatetime
+    .set({ hour: 12, minute: 0 })
+    .startOf(selectedMode)
+    .minus({ days: 1 })
+    .toISODate();
+  const toDate = effectiveCurrentDatetime
+    .set({ hour: 12, minute: 0 })
+    .endOf(selectedMode)
+    .toISODate();
+
+  return {
+    userId: '1',
+    fromDate,
+    toDate,
+  };
+};
+
 const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObject }) => {
   const inputRef = useRef();
+
+  const selectedMode = getQueryParamValue(URL_PARAM_KEYS.VIEW_MODE, MODES.WEEK);
+  const selectedIndexDifference = getQueryParamValue(URL_PARAM_KEYS.OFFSET_IDX, 0, {
+    isNumeric: true,
+  });
+
+  const effectiveCurrentDatetime = resolveCurrentEffectiveDatetime({
+    selectedMode,
+    selectedIndexDifference,
+  });
 
   const { data } = useQuery(GET_TAGS);
   const tags = data?.tags || [];
 
   const [onCreateTask] = useMutation(QUICK_CREATE_TASK, {
-    refetchQueries: [{ query: GET_TASKS }],
+    refetchQueries: [
+      {
+        query: GET_TASKS,
+        variables: resolveQueryVariables({ selectedMode, effectiveCurrentDatetime }),
+      },
+    ],
   });
 
   const [selectedTagId, setSelectedTagId] = useState('');
@@ -57,16 +90,6 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
 
     setIsLoading(false);
   };
-
-  const selectedMode = getQueryParamValue(URL_PARAM_KEYS.VIEW_MODE, MODES.WEEK);
-  const selectedIndexDifference = getQueryParamValue(URL_PARAM_KEYS.OFFSET_IDX, 0, {
-    isNumeric: true,
-  });
-
-  const effectiveCurrentDatetime = resolveCurrentEffectiveDatetime({
-    selectedMode,
-    selectedIndexDifference,
-  });
 
   const onChangeMode = (mode) => replaceQueryParamValue(URL_PARAM_KEYS.VIEW_MODE, mode);
 
