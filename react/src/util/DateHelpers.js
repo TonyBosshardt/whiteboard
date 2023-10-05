@@ -12,6 +12,9 @@ export const STANDARD_DATE_TIME_FORMAT = 'MMM dd yyyy h:mm:ss a';
 /** writing to db */
 export const SQL_DATE_TIME_FORMAT = 'yyyy-MM-dd HH:mm:ss';
 
+export const effectiveStartOfWeekIdx = (datetime) =>
+  datetime.weekday === 7 ? 0 : datetime.weekday;
+
 /**
  * Always returns a Luxon DateTime object.
  */
@@ -22,6 +25,10 @@ const DateHelpers = {
 
   getCurrentISODate() {
     return DateTime.local().toISODate();
+  },
+
+  dateTimeToSQLFormat(datetimeObj) {
+    return datetimeObj.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT);
   },
 
   getStartOfWeekForDay(givenDay) {

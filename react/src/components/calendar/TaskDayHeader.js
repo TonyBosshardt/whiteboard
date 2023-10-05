@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button, Icon } from 'semantic-ui-react';
 
 import { TASK_STATUS } from '../../util/constants.js';
-import NewTaskModal from './NewTaskModal.js';
+import NewTaskModal from './taskCreate/NewTaskModal.js';
 
 const TaskDayHeader = ({ dayOfMonth, isToday, isDayMode, tasksForDate, dateTime, tags }) => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);

@@ -35,7 +35,6 @@ const TaskItem = ({ task, isDayMode, tags }) => {
     dueDatetime,
     daysPutOff,
     originalDueDatetime,
-    insertDatetime,
     completeDatetime,
     status,
     tag,
@@ -170,12 +169,23 @@ const TaskItem = ({ task, isDayMode, tags }) => {
                   : '-'}
               </Header>
             </div>
-            <div className={classNames('procrastination-badge', { active: !!daysPutOff })}>
-              {!!daysPutOff && <Icon name="exclamation circle" color="red" />} Days Put Off:{' '}
-              {daysPutOff}
+            <div className={classNames('procrastination-badge', { active: daysPutOff > 0 })}>
+              {daysPutOff > 0 && <Icon name="exclamation circle" color="red" />} Days Put Off:{' '}
+              {daysPutOff > 0 ? daysPutOff : 0}
             </div>
           </div>
           <div className="flex" style={{ marginTop: '1em' }}>
+            <Button
+              color="red"
+              style={{ margin: 'auto auto auto 0', fontSize: '0.7em' }}
+              size="tiny"
+              onClick={async () => {
+                await handleUpdateTask({ isDeleted: 1 });
+                // TODO: refetch tasks for the specific day to hide this deleted task
+              }}
+            >
+              Delete
+            </Button>
             <div style={{ margin: 'auto 0 0 auto' }}>
               <Button.Group size="tiny">
                 <Button

@@ -1,4 +1,5 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
+import _ from 'lodash';
 import React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -6,40 +7,10 @@ import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import WithQueryStrings from '../../util/WithQueryStrings.js';
 import { KEYBOARD_CODES, TASK_STATUS, URL_PARAM_KEYS } from '../../util/constants.js';
 import CalendarBody from './CalendarBody.js';
-import { MODES, resolveCurrentEffectiveDatetime } from './CalendarHelpers.js';
+import { MODES, loadEffectiveWeeks, resolveCurrentEffectiveDatetime } from './CalendarHelpers.js';
+import { GET_TAGS, GET_TASKS } from './queries.js';
 
 import './TaskCalendar.scss';
-
-export const GET_TASKS = gql`
-  query GetTasks {
-    tags {
-      id
-      title
-      displayColor
-    }
-    tasks(userId: 1) {
-      id
-      daysPutOff
-      originalDueDatetime
-      user {
-        id
-        firstName
-        lastName
-      }
-      title
-      description
-      tag {
-        id
-        title
-        displayColor
-      }
-      dueDatetime
-      status
-      insertDatetime
-      completeDatetime
-    }
-  }
-`;
 
 const TASK_UPDATE = gql`
   mutation TASK_UPDATE($input: TaskCreateInput!, $id: ID!) {
@@ -59,6 +30,9 @@ const TASK_UPDATE = gql`
     }
   }
 `;
+
+const resolveFirstDate = (chunkedByWeek) => _.first(_.first(chunkedByWeek));
+const resolveLastDate = (chunkedByWeek) => _.last(_.last(chunkedByWeek));
 
 const TaskCalendar = ({ getQueryParamValue }) => {
   const selectedMode = getQueryParamValue(URL_PARAM_KEYS.VIEW_MODE, MODES.WEEK);
@@ -85,15 +59,33 @@ const TaskCalendar = ({ getQueryParamValue }) => {
       },
     });
 
-  const { loading, error, data } = useQuery(GET_TASKS);
+  const isDayMode = selectedMode === MODES.DAY;
 
-  const tasks = data?.tasks || [];
-  const tags = data?.tags || [];
+  const chunkedByWeek = loadEffectiveWeeks({
+    selectedMode,
+    isDayMode,
+    effectiveCurrentDatetime,
+    effectiveWindowSize,
+  });
+
+  const mainQueryVariables = {
+    userId: '1',
+    fromDate: resolveFirstDate(chunkedByWeek).isoDate,
+    toDate: resolveLastDate(chunkedByWeek).dateTime.plus({ days: 1 }).toISODate(),
+  };
+
+  const { data: taskData } = useQuery(GET_TASKS, { variables: mainQueryVariables });
+  const { data: tagData } = useQuery(GET_TAGS);
+
+  const tasks = taskData?.tasks || [];
+  const tags = tagData?.tags || [];
 
   const pushTask = async ({ direction }) => {
     const foundTask = tasks.find((t) => t.id === window.currentHoverTaskId);
 
     if (!foundTask || foundTask?.status === TASK_STATUS.COMPLETE) return null;
+
+    window.currentHoverTaskId = null;
 
     return handleUpdateTask(foundTask.id, {
       dueDatetime: DateHelpers.convertToDateTime(foundTask.dueDatetime)
@@ -117,11 +109,12 @@ const TaskCalendar = ({ getQueryParamValue }) => {
       style={{ flex: 1, marginTop: '5em', overflowY: 'auto' }}
     >
       <CalendarBody
-        selectedMode={selectedMode}
         effectiveCurrentDatetime={effectiveCurrentDatetime}
         tasks={tasks}
         tags={tags}
         effectiveWindowSize={effectiveWindowSize}
+        isDayMode={isDayMode}
+        chunkedByWeek={chunkedByWeek}
       />
     </div>
   );

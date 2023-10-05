@@ -124,3 +124,17 @@
         margin-right: 0;
     }
 }
+
+.action-area {
+    cursor: pointer;
+    border-radius: 0.28em;
+    transition: background-color 60ms ease-in;
+}
+
+.action-area:hover {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+.ui.checkbox input.hidden + label {
+    color: white;
+}

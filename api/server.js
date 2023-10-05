@@ -12,9 +12,11 @@ const server = new ApolloServer({
   resolvers,
 });
 
+const cachedDbConnection = getDBConnection();
+
 const { url } = await startStandaloneServer(server, {
   listen: { port: SERVER_LISTEN_PORT },
-  context: () => ({ dbConnection: getDBConnection() }),
+  context: () => ({ dbConnection: cachedDbConnection }),
 });
 
 console.log(`🚀  Server ready at: ${url}`);

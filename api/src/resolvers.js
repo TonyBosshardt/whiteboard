@@ -34,10 +34,18 @@ const resolvers = {
 
           return row;
         }),
-    tasks: (obj, { userId, projectId, tagId }, { dbConnection }) =>
-      dbConnection('task')
-        .where('user_id', userId)
-        .then((rows) => CaseUtils.toCamelCase(rows)),
+    tasks: (obj, { userId, projectId, tagId, fromDate, toDate }, { dbConnection }) => {
+      const baseQuery = dbConnection('task').where('user_id', userId).where('is_deleted', 0);
+
+      if (fromDate) {
+        baseQuery.where('due_datetime', '>=', fromDate);
+      }
+      if (toDate) {
+        baseQuery.where('due_datetime', '<=', toDate);
+      }
+
+      return baseQuery.then((rows) => CaseUtils.toCamelCase(rows));
+    },
     tag() {},
     tags: (obj, args, { dbConnection }) =>
       dbConnection

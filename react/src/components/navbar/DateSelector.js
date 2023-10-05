@@ -6,7 +6,7 @@ import DateHelpers from '../../util/DateHelpers.js';
 import { URL_PARAM_KEYS } from '../../util/constants.js';
 import { MODES } from '../calendar/CalendarHelpers.js';
 
-const ExampleCustomInput = forwardRef(({ onClick, effectiveCurrentDatetime }, ref) => (
+const MonthDisplay = forwardRef(({ onClick, effectiveCurrentDatetime }, ref) => (
   <div className="date-selector-outer" onClick={onClick} ref={ref}>
     <Header style={{ color: 'white' }}>
       {effectiveCurrentDatetime.toFormat('LLLL')}
@@ -34,7 +34,7 @@ const DateSelector = ({ effectiveCurrentDatetime, setQueryParamObject }) => {
     <DatePicker
       selected={effectiveCurrentDatetime.toJSDate()}
       onChange={handleUpdateEffectiveDate}
-      customInput={<ExampleCustomInput effectiveCurrentDatetime={effectiveCurrentDatetime} />}
+      customInput={<MonthDisplay effectiveCurrentDatetime={effectiveCurrentDatetime} />}
     />
   );
 };

@@ -62,6 +62,7 @@ TABLES[
         `original_due_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `days_put_off` INT AS (DATEDIFF(due_datetime, original_due_datetime)) VIRTUAL,
         `complete_datetime` DATETIME DEFAULT NULL,
+        `is_deleted` INT(1) NOT NULL DEFAULT 0,
         `insert_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`task_id`),
         FOREIGN KEY fk_task_user_id (user_id) REFERENCES user (user_id),

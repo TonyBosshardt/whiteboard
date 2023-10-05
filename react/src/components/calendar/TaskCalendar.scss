@@ -213,6 +213,7 @@ $CURRENT_DAY_COLOR: #2185d0;
         overflow-y: auto;
         height: 100%;
         font-size: 0.9em;
+        line-height: normal;
         &.day-mode {
             font-size: 1.15em;
         }
@@ -238,4 +239,28 @@ $CURRENT_DAY_COLOR: #2185d0;
         background-color: rgb(219 40 40 / 25%);
         outline: 1px solid rgb(219, 40, 40);
     }
+}
+
+.recurring-day-selector {
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.75em;
+    user-select: none;
+    border-radius: 0 0 0 0;
+}
+
+.recurring-day-selector:last-child {
+    border-right: none;
+}
+
+.date-display-selection {
+    background-color: rgb(42, 42, 42);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-style: normal;
+    padding: 1em;
+    border-radius: 0.28em;
+}
+
+.date-display-selection:hover {
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }

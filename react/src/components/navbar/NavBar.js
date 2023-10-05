@@ -12,20 +12,10 @@ import {
   MODE_OPTIONS,
   resolveCurrentEffectiveDatetime,
 } from '../calendar/CalendarHelpers.js';
-import { GET_TASKS } from '../calendar/TaskCalendar.js';
+import { GET_TAGS, GET_TASKS } from '../calendar/queries.js';
 import DateSelector from './DateSelector.js';
 
 import './NavBar.scss';
-
-const GET_TAGS = gql`
-  query GetTags {
-    tags {
-      id
-      title
-      displayColor
-    }
-  }
-`;
 
 const QUICK_CREATE_TASK = gql`
   mutation TaskCreate($input: [TaskCreateInput!]!) {

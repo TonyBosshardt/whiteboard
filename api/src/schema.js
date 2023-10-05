@@ -54,12 +54,13 @@ const typeDefs = `#graphql
     status: String
     completeDatetime: DateTime
     dueDatetime: DateTime
+    isDeleted: Int
     originalDueDatetime: DateTime
   }
 
   type Query {
     task(id: ID!): Task
-    tasks(userId: ID!, projectId: ID, tagId: ID): [Task]
+    tasks(userId: ID!, projectId: ID, tagId: ID, fromDate: String, toDate: String): [Task]
 
     tag(id: ID!): Tag
     tags: [Tag]

@@ -15,9 +15,10 @@ const EditableHeader = ({
   setExternalRef,
   onAfterSubmitChange,
   externallySetEdit,
+  startInEditMode = false,
   ...headerProps
 }) => {
-  const [isEdit, setEdit] = useState(false);
+  const [isEdit, setEdit] = useState(startInEditMode);
   const [localValue, setLocalValue] = useState(text);
 
   useEffect(() => {

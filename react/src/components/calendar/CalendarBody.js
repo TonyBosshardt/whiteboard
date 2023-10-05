@@ -2,7 +2,6 @@ import _ from 'lodash';
 import React from 'react';
 
 import DateHelpers from '../../util/DateHelpers.js';
-import { MODES, loadEffectiveWeeks } from './CalendarHelpers.js';
 import TaskDay from './TaskDay.js';
 import WeekdayHeader from './WeekdayHeader.js';
 
@@ -11,21 +10,13 @@ const TOP_MARGIN = '5em';
 const DAY_HEADER_HEIGHT_PX = '24.1';
 
 const CalendarBody = ({
-  selectedMode,
   effectiveCurrentDatetime,
   tasks,
   tags,
   effectiveWindowSize,
+  isDayMode,
+  chunkedByWeek,
 }) => {
-  const isDayMode = selectedMode === MODES.DAY;
-
-  const chunkedByWeek = loadEffectiveWeeks({
-    selectedMode,
-    isDayMode,
-    effectiveCurrentDatetime,
-    effectiveWindowSize,
-  });
-
   const weekHeight = `calc((${ROOT_DIV_HEIGHT} - ${TOP_MARGIN} - ${
     isDayMode ? 0 : DAY_HEADER_HEIGHT_PX
   }px) / ${chunkedByWeek.length})`;
