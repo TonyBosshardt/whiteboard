@@ -2,6 +2,8 @@ import classNames from 'classnames';
 import React, { createRef, useEffect, useState } from 'react';
 import { Header, Input } from 'semantic-ui-react';
 
+import { KEYBOARD_CODES } from '../../util/constants.js';
+
 import './EditableHeader.scss';
 
 const EditableHeader = ({
@@ -15,6 +17,7 @@ const EditableHeader = ({
   setExternalRef,
   onAfterSubmitChange,
   externallySetEdit,
+  small,
   startInEditMode = false,
   ...headerProps
 }) => {
@@ -46,7 +49,7 @@ const EditableHeader = ({
     ? {
         color: 'white',
         backgroundColor: 'black',
-        border: ' 1px solid lightgray',
+        border: '1px solid lightgray',
         fontSize: '14.58px',
         fontStyle: 'normal',
         fontWeight: 700,
@@ -54,13 +57,19 @@ const EditableHeader = ({
       }
     : {};
 
+  if (small) {
+    innerInputStyle.fontWeight = 100;
+    innerInputStyle.fontSize = '12px';
+    innerInputStyle.height = '2.75em';
+  }
+
   return (
     <div className={classNames('flex editable-header-container', {})} {...containerProps}>
       {isEdit || externallySetEdit ? (
         <Input
           inverted
           onKeyPress={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === KEYBOARD_CODES.ENTER) {
               handleSubmit();
             }
           }}

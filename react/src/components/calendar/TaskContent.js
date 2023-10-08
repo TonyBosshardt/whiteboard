@@ -57,6 +57,7 @@ const TaskContent = ({
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
         isDayMode={isDayMode}
+        incompleteTasks={incompleteTasks}
       />
       {isExpanded ? (
         <div className="flex flex-col" style={{ marginBottom: '0.5em' }}>

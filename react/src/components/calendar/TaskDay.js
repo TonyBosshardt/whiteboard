@@ -15,6 +15,8 @@ const TaskDay = ({
   keyedTags,
   tags,
   isoDate,
+  selectedMode,
+  effectiveCurrentDatetime,
   onClickToday = () => {},
 }) => {
   const dayOfMonth = dateTime.toFormat('d');
@@ -46,6 +48,8 @@ const TaskDay = ({
           isDayMode={isDayMode}
           tasksForDate={tasksForDate}
           tags={tags}
+          selectedMode={selectedMode}
+          effectiveCurrentDatetime={effectiveCurrentDatetime}
         />
       </div>
       <div

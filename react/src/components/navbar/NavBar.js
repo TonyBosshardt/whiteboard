@@ -10,10 +10,14 @@ import { KEYBOARD_CODES, KEYBOARD_SHORTCUTS, URL_PARAM_KEYS } from '../../util/c
 import {
   MODES,
   MODE_OPTIONS,
+  loadEffectiveWeeks,
   resolveCurrentEffectiveDatetime,
+  resolveFirstDate,
+  resolveLastDate,
 } from '../calendar/CalendarHelpers.js';
 import { GET_TAGS, GET_TASKS } from '../calendar/queries.js';
 import DateSelector from './DateSelector.js';
+import TagManager from './TagManager.js';
 
 import './NavBar.scss';
 
@@ -25,21 +29,17 @@ const QUICK_CREATE_TASK = gql`
   }
 `;
 
-const resolveQueryVariables = ({ selectedMode, effectiveCurrentDatetime }) => {
-  const fromDate = effectiveCurrentDatetime
-    .set({ hour: 12, minute: 0 })
-    .startOf(selectedMode)
-    .minus({ days: 1 })
-    .toISODate();
-  const toDate = effectiveCurrentDatetime
-    .set({ hour: 12, minute: 0 })
-    .endOf(selectedMode)
-    .toISODate();
+export const resolveQueryVariables = ({ selectedMode, effectiveCurrentDatetime, isDayMode }) => {
+  const chunkedByWeek = loadEffectiveWeeks({
+    selectedMode,
+    isDayMode,
+    effectiveCurrentDatetime,
+  });
 
   return {
     userId: '1',
-    fromDate,
-    toDate,
+    fromDate: resolveFirstDate(chunkedByWeek).isoDate,
+    toDate: resolveLastDate(chunkedByWeek).dateTime.plus({ days: 1 }).toISODate(),
   };
 };
 
@@ -63,7 +63,11 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
     refetchQueries: [
       {
         query: GET_TASKS,
-        variables: resolveQueryVariables({ selectedMode, effectiveCurrentDatetime }),
+        variables: resolveQueryVariables({
+          selectedMode,
+          effectiveCurrentDatetime,
+          isDayMode: selectedMode === MODES.DAY,
+        }),
       },
     ],
   });
@@ -71,17 +75,21 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
   const [selectedTagId, setSelectedTagId] = useState('');
   const [quickAddText, setQuickAddText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [tagModalOpen, setTagModalOpen] = useState(false);
 
   const handleCreateTask = async () => {
     setIsLoading(true);
+
+    const dt = DateHelpers.getCurrentDatetime()
+      .set({ hour: 12, minute: 0 })
+      .toFormat(SQL_DATE_TIME_FORMAT);
 
     await onCreateTask({
       variables: {
         input: {
           title: quickAddText,
-          dueDatetime: DateHelpers.getCurrentDatetime()
-            .set({ hour: 12, minute: 0 })
-            .toFormat(SQL_DATE_TIME_FORMAT),
+          originalDueDatetime: dt,
+          dueDatetime: dt,
           tagId: selectedTagId || null,
           userId: '1',
         },
@@ -122,61 +130,82 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
   useHotkeys('left', () => onIncrement(-1));
 
   return (
-    <div className="navbar">
-      <div className="flex outer">
-        <div className="flex" style={{ marginRight: 'auto' }}>
-          <Input
-            placeholder="quick add task to today ..."
-            style={{ marginRight: '1em', width: '30em' }}
-            value={quickAddText}
-            onChange={(e, { value }) => setQuickAddText(value)}
-            ref={inputRef}
-            loading={isLoading}
-            onKeyPress={async ({ key }) => {
-              if (key === KEYBOARD_CODES.ENTER && quickAddText && !isLoading) {
-                await handleCreateTask();
-                setQuickAddText('');
+    <>
+      <TagManager open={tagModalOpen} onClose={() => setTagModalOpen(false)} />
+      <div className="navbar">
+        <div className="flex outer">
+          <div className="flex" style={{ marginRight: 'auto' }}>
+            <Input
+              placeholder="quick add task to today ..."
+              style={{ marginRight: '1em', width: '30em' }}
+              value={quickAddText}
+              onChange={(e, { value }) => setQuickAddText(value)}
+              ref={inputRef}
+              loading={isLoading}
+              onKeyPress={async ({ key }) => {
+                if (key === KEYBOARD_CODES.ENTER && quickAddText && !isLoading) {
+                  await handleCreateTask();
+                  setQuickAddText('');
+                }
+              }}
+              label={
+                <Dropdown
+                  value={selectedTagId}
+                  onChange={(e, { value }) => setSelectedTagId(value)}
+                  clearable
+                  selection
+                  style={{ minWidth: '10em', maxWidth: '10em' }}
+                  placeholder="tag"
+                  options={tags.map((r) => ({
+                    text: r.title,
+                    value: r.id,
+                  }))}
+                  search
+                />
               }
-            }}
-            label={
-              <Dropdown
-                value={selectedTagId}
-                onChange={(e, { value }) => setSelectedTagId(value)}
-                clearable
-                selection
-                style={{ minWidth: '10em', maxWidth: '10em' }}
-                placeholder="tag"
-                options={tags.map((r) => ({
-                  text: r.title,
-                  value: r.id,
-                }))}
-                search
+              labelPosition="left"
+            />
+          </div>
+          <div className="flex" style={{ margin: 'auto 1em auto auto' }}>
+            <Button
+              icon="tag"
+              circular
+              style={{ fontSize: '0.9em' }}
+              onClick={() => setTagModalOpen(true)}
+            />
+          </div>
+          <Dropdown
+            value={selectedMode}
+            search
+            selection
+            style={{ margin: 'auto 1em auto 0', fontSize: '0.9em' }}
+            options={MODE_OPTIONS.map((m) => ({ text: _.startCase(m), value: m }))}
+            onChange={(e, { value }) => onChangeMode(value)}
+          />
+          <div className="flex text-white" style={{ margin: 'auto 0 auto 0' }}>
+            <DateSelector
+              effectiveCurrentDatetime={effectiveCurrentDatetime}
+              replaceQueryParamValue={replaceQueryParamValue}
+              setQueryParamObject={setQueryParamObject}
+            />
+            <div className="flex" style={{ margin: 'auto 0 auto 0' }}>
+              <Button
+                icon="arrow left"
+                style={{ fontSize: '0.9em' }}
+                circular
+                onClick={() => onIncrement(-1)}
               />
-            }
-            labelPosition="left"
-          />
-        </div>
-        <Dropdown
-          value={selectedMode}
-          search
-          selection
-          style={{ margin: 'auto 1em auto 0' }}
-          options={MODE_OPTIONS.map((m) => ({ text: _.startCase(m), value: m }))}
-          onChange={(e, { value }) => onChangeMode(value)}
-        />
-        <div className="flex text-white" style={{ margin: 'auto 0 auto 0' }}>
-          <DateSelector
-            effectiveCurrentDatetime={effectiveCurrentDatetime}
-            replaceQueryParamValue={replaceQueryParamValue}
-            setQueryParamObject={setQueryParamObject}
-          />
-          <div className="flex" style={{ margin: 'auto 0 auto 0' }}>
-            <Button icon="arrow left" circular onClick={() => onIncrement(-1)} />
-            <Button icon="arrow right" circular onClick={() => onIncrement(1)} />
+              <Button
+                icon="arrow right"
+                style={{ fontSize: '0.9em' }}
+                circular
+                onClick={() => onIncrement(1)}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

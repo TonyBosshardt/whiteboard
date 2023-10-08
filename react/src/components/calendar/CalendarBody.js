@@ -16,6 +16,7 @@ const CalendarBody = ({
   effectiveWindowSize,
   isDayMode,
   chunkedByWeek,
+  selectedMode,
 }) => {
   const weekHeight = `calc((${ROOT_DIV_HEIGHT} - ${TOP_MARGIN} - ${
     isDayMode ? 0 : DAY_HEADER_HEIGHT_PX
@@ -58,6 +59,8 @@ const CalendarBody = ({
                 tasksForDate={tasksForDate}
                 keyedTags={keyedTags}
                 tags={tags}
+                selectedMode={selectedMode}
+                effectiveCurrentDatetime={effectiveCurrentDatetime}
               />
             );
           })}

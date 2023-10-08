@@ -69,6 +69,25 @@ const resolvers = {
         .where('task_id', id)
         .then((rows) => {
           const [row] = CaseUtils.toCamelCase(rows);
+
+          return row;
+        });
+    },
+    tasksUpdate: async (obj, { input, ids }, { dbConnection }) => {
+      await dbConnection('task').whereIn('task_id', ids).update(CaseUtils.toSnakeCase(input));
+
+      return dbConnection('task')
+        .whereIn('task_id', ids)
+        .then((rows) => CaseUtils.toCamelCase(rows));
+    },
+    tagUpdate: async (obj, { input, id }, { dbConnection }) => {
+      await dbConnection('tag').where('tag_id', '=', id).update(CaseUtils.toSnakeCase(input));
+
+      return dbConnection('tag')
+        .where('tag_id', id)
+        .then((rows) => {
+          const [row] = CaseUtils.toCamelCase(rows);
+
           return row;
         });
     },

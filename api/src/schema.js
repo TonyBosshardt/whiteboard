@@ -18,6 +18,7 @@ const typeDefs = `#graphql
     description: String
     displayColor: String
     tasks: [Task]
+    taskCount: Int
     insertDatetime: DateTime
   }
 
@@ -58,6 +59,11 @@ const typeDefs = `#graphql
     originalDueDatetime: DateTime
   }
 
+  input TagCreateInput {
+    title: String
+    displayColor: String
+  }
+
   type Query {
     task(id: ID!): Task
     tasks(userId: ID!, projectId: ID, tagId: ID, fromDate: String, toDate: String): [Task]
@@ -70,7 +76,11 @@ const typeDefs = `#graphql
 
   type Mutation {
     tasksCreate(input: [TaskCreateInput!]!): [Task]
+
     taskUpdate(input: TaskCreateInput!, id: ID!): Task
+    tasksUpdate(input: TaskCreateInput!, ids: [ID!]!): [Task]
+
+    tagUpdate(input: TagCreateInput!, id: ID!): Tag
   }
 `;
 

@@ -59,12 +59,7 @@ const _padFront = ({ firstDate, startDateForRange }) => {
   return padding;
 };
 
-export const loadEffectiveWeeks = ({
-  selectedMode,
-  isDayMode,
-  effectiveCurrentDatetime,
-  effectiveWindowSize,
-}) => {
+const _calculateEffectiveWeeks = ({ selectedMode, isDayMode, effectiveCurrentDatetime }) => {
   const effectiveMonthIdx = effectiveCurrentDatetime.toFormat('L');
   const effectiveYear = effectiveCurrentDatetime.toFormat('yyyy');
 
@@ -109,3 +104,13 @@ export const loadEffectiveWeeks = ({
 
   return chunked;
 };
+
+/** expensive, but memoized 🤷 */
+export const loadEffectiveWeeks = _.memoize(
+  _calculateEffectiveWeeks,
+  ({ selectedMode, isDayMode, effectiveCurrentDatetime }) =>
+    `${selectedMode}-${isDayMode}-${effectiveCurrentDatetime.toISODate()}`,
+);
+
+export const resolveFirstDate = (chunkedByWeek) => _.first(_.first(chunkedByWeek));
+export const resolveLastDate = (chunkedByWeek) => _.last(_.last(chunkedByWeek));

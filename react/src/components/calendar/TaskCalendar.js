@@ -1,5 +1,4 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
-import _ from 'lodash';
+import { useMutation, useQuery } from '@apollo/client';
 import React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -7,32 +6,17 @@ import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import WithQueryStrings from '../../util/WithQueryStrings.js';
 import { KEYBOARD_CODES, TASK_STATUS, URL_PARAM_KEYS } from '../../util/constants.js';
 import CalendarBody from './CalendarBody.js';
-import { MODES, loadEffectiveWeeks, resolveCurrentEffectiveDatetime } from './CalendarHelpers.js';
+import {
+  MODES,
+  loadEffectiveWeeks,
+  resolveCurrentEffectiveDatetime,
+  resolveFirstDate,
+  resolveLastDate,
+} from './CalendarHelpers.js';
+import { TASK_UPDATE } from './mutations.js';
 import { GET_TAGS, GET_TASKS } from './queries.js';
 
 import './TaskCalendar.scss';
-
-const TASK_UPDATE = gql`
-  mutation TASK_UPDATE($input: TaskCreateInput!, $id: ID!) {
-    taskUpdate(input: $input, id: $id) {
-      id
-      title
-      daysPutOff
-      description
-      originalDueDatetime
-      dueDatetime
-      insertDatetime
-      completeDatetime
-      status
-      tag {
-        id
-      }
-    }
-  }
-`;
-
-const resolveFirstDate = (chunkedByWeek) => _.first(_.first(chunkedByWeek));
-const resolveLastDate = (chunkedByWeek) => _.last(_.last(chunkedByWeek));
 
 const TaskCalendar = ({ getQueryParamValue }) => {
   const selectedMode = getQueryParamValue(URL_PARAM_KEYS.VIEW_MODE, MODES.WEEK);
@@ -74,7 +58,10 @@ const TaskCalendar = ({ getQueryParamValue }) => {
     toDate: resolveLastDate(chunkedByWeek).dateTime.plus({ days: 1 }).toISODate(),
   };
 
-  const { data: taskData } = useQuery(GET_TASKS, { variables: mainQueryVariables });
+  const { data: taskData } = useQuery(GET_TASKS, {
+    variables: mainQueryVariables,
+    fetchPolicy: 'cache-and-network' /** always hit the API for new data, rather than the cache */,
+  });
   const { data: tagData } = useQuery(GET_TAGS);
 
   const tasks = taskData?.tasks || [];
@@ -115,6 +102,7 @@ const TaskCalendar = ({ getQueryParamValue }) => {
         effectiveWindowSize={effectiveWindowSize}
         isDayMode={isDayMode}
         chunkedByWeek={chunkedByWeek}
+        selectedMode={selectedMode}
       />
     </div>
   );

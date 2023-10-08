@@ -1,40 +1,24 @@
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import { Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { Button, Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
+import { KEYBOARD_CODES, TASK_STATUS } from '../../util/constants.js';
 import EditableHeader from '../ui/EditableHeader.js';
 import EditableTextArea from '../ui/EditableTextArea.js';
 import InvertedDropdown from '../ui/InvertedDropdown.js';
-
-const TASK_UPDATE = gql`
-  mutation TASK_UPDATE($input: TaskCreateInput!, $id: ID!) {
-    taskUpdate(input: $input, id: $id) {
-      id
-      title
-      daysPutOff
-      description
-      originalDueDatetime
-      dueDatetime
-      insertDatetime
-      completeDatetime
-      status
-      tag {
-        id
-      }
-    }
-  }
-`;
+import { TASK_UPDATE } from './mutations.js';
 
 const TaskItem = ({ task, isDayMode, tags }) => {
   const {
     id,
     title,
     description,
-    dueDatetime,
     daysPutOff,
     originalDueDatetime,
+    dueDatetime,
     completeDatetime,
     status,
     tag,
@@ -43,11 +27,19 @@ const TaskItem = ({ task, isDayMode, tags }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickEditTitle, setIsQuickEditTitle] = useState(false);
 
-  const isComplete = status === 'complete';
+  useHotkeys([KEYBOARD_CODES.ENTER], (e) => {
+    e.preventDefault();
+
+    if (window.currentHoverTaskId === id && document.activeElement === document.body) {
+      setIsQuickEditTitle(true);
+    }
+  });
+
+  const isComplete = status === TASK_STATUS.COMPLETE;
 
   const [onUpdateTask] = useMutation(TASK_UPDATE);
 
-  const handleUpdateTask = async (input) => {
+  const handleUpdateTask = async (input, mutationProps = {}) => {
     setIsLoading(true);
 
     await onUpdateTask({
@@ -55,6 +47,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
         id,
         input,
       },
+      ...mutationProps,
     });
 
     setIsLoading(false);
@@ -69,7 +62,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
       trigger={
         <div
           id={id}
-          className="flex task-item"
+          className={classNames('flex task-item', { 'day-mode': isDayMode })}
           style={{
             textDecoration: isComplete ? 'line-through' : 'none',
           }}
@@ -174,13 +167,14 @@ const TaskItem = ({ task, isDayMode, tags }) => {
               {daysPutOff > 0 ? daysPutOff : 0}
             </div>
           </div>
-          {/* <div className="flex" style={{ marginTop: '1em' }}>
+          <div className="flex" style={{ marginTop: '1em' }}>
             <Button
               color="red"
               style={{ margin: 'auto auto auto 0', fontSize: '0.7em' }}
               size="tiny"
               onClick={async () => {
                 await handleUpdateTask({ isDeleted: 1 });
+
                 // TODO: refetch tasks for the specific day to hide this deleted task
               }}
             >
@@ -219,7 +213,7 @@ const TaskItem = ({ task, isDayMode, tags }) => {
                 </Button>
               </Button.Group>
             </div>
-          </div> */}
+          </div>
         </div>
       }
     />

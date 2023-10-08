@@ -5,7 +5,16 @@ import { Button, Icon } from 'semantic-ui-react';
 import { TASK_STATUS } from '../../util/constants.js';
 import NewTaskModal from './taskCreate/NewTaskModal.js';
 
-const TaskDayHeader = ({ dayOfMonth, isToday, isDayMode, tasksForDate, dateTime, tags }) => {
+const TaskDayHeader = ({
+  dayOfMonth,
+  isToday,
+  isDayMode,
+  tasksForDate,
+  dateTime,
+  tags,
+  selectedMode,
+  effectiveCurrentDatetime,
+}) => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -28,6 +37,9 @@ const TaskDayHeader = ({ dayOfMonth, isToday, isDayMode, tasksForDate, dateTime,
         onClose={() => setCreateModalOpen(false)}
         initialDueDatetime={dateTime}
         tags={tags}
+        isDayMode={isDayMode}
+        selectedMode={selectedMode}
+        effectiveCurrentDatetime={effectiveCurrentDatetime}
       />
       <div
         className="flex day-header-tray flex-grow"

@@ -1,25 +1,27 @@
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import React, { useState } from 'react';
 import { Button, Checkbox, Modal } from 'semantic-ui-react';
 
 import DateHelpers, { effectiveStartOfWeekIdx } from '../../../util/DateHelpers.js';
+import { resolveQueryVariables } from '../../navbar/NavBar.js';
 import EditableHeader from '../../ui/EditableHeader.js';
 import EditableTextArea from '../../ui/EditableTextArea.js';
 import InvertedDropdown from '../../ui/InvertedDropdown.js';
+import { MODES } from '../CalendarHelpers.js';
+import { CREATE_TASK } from '../mutations.js';
 import { GET_TASKS } from '../queries.js';
 import RecurringTaskSettings from './RecurringTaskSettings.js';
 
-const CREATE_TASK = gql`
-  mutation TaskCreate($input: [TaskCreateInput!]!) {
-    tasksCreate(input: $input) {
-      id
-    }
-  }
-`;
-
 const DEFAULT_DAYS_RECURRING = 90;
 
-const NewTaskModal = ({ open, onClose, initialDueDatetime, tags }) => {
+const NewTaskModal = ({
+  open,
+  onClose,
+  initialDueDatetime,
+  tags,
+  selectedMode,
+  effectiveCurrentDatetime,
+}) => {
   const [prototypeTaskParams, setPrototypeTaskParams] = useState({
     title: '',
     description: '',
@@ -40,7 +42,16 @@ const NewTaskModal = ({ open, onClose, initialDueDatetime, tags }) => {
     setPrototypeTaskParams({ ...prototypeTaskParams, [key]: value });
 
   const [onCreateTasks] = useMutation(CREATE_TASK, {
-    refetchQueries: [{ query: GET_TASKS, variables: { userId: '1' } }],
+    refetchQueries: [
+      {
+        query: GET_TASKS,
+        variables: resolveQueryVariables({
+          selectedMode,
+          effectiveCurrentDatetime,
+          isDayMode: selectedMode === MODES.DAY,
+        }),
+      },
+    ],
   });
 
   const handleCreateTasks = async () => {
@@ -67,7 +78,7 @@ const NewTaskModal = ({ open, onClose, initialDueDatetime, tags }) => {
         : ({ nextDate }) => daysOfTheWeek.has(effectiveStartOfWeekIdx(nextDate));
 
       const end = DateHelpers.convertToDateTime(endDatetime).startOf('day');
-      const start = DateHelpers.getCurrentDatetime().startOf('day');
+      const start = initialDueDatetime.startOf('day');
 
       const diff = Math.floor(end.diff(start).as('days'));
 

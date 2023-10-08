@@ -9,7 +9,6 @@ export const TAG_FIELDS = gql`
 `;
 
 export const TASK_FIELDS = gql`
-  ${TAG_FIELDS}
   fragment TaskFields on Task {
     id
     daysPutOff
@@ -22,7 +21,7 @@ export const TASK_FIELDS = gql`
     title
     description
     tag {
-      ...TagFields
+      id
     }
     dueDatetime
     status
