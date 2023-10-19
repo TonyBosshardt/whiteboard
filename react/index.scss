@@ -1,3 +1,5 @@
+$ROUNDED_BORDER: 0.28em;
+
 .root-container {
     min-height: 100vh;
     background-color: #222222d1;
@@ -125,9 +127,13 @@
     }
 }
 
+.round-corner {
+    border-radius: $ROUNDED_BORDER;
+}
+
 .action-area {
     cursor: pointer;
-    border-radius: 0.28em;
+    border-radius: $ROUNDED_BORDER;
     transition: background-color 60ms ease-in;
 }
 

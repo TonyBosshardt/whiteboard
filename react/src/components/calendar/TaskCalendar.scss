@@ -59,9 +59,9 @@ $CURRENT_DAY_COLOR: #2185d0;
         padding: 0.5em;
         border-right: 1px solid lightgray;
         width: calc(100vw / 7);
-        &.inactive {
-            color: #878787;
-        }
+        // &.inactive {
+        //     color: #878787;
+        // }
         &.day {
             width: 100%;
         }
@@ -186,6 +186,7 @@ $CURRENT_DAY_COLOR: #2185d0;
         padding: 0.5em;
         transition: 120ms ease-in;
         margin-top: -0.5px;
+        position: relative;
         &.day-mode {
             font-size: 1em;
         }

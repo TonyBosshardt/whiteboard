@@ -18,6 +18,7 @@ const EditableHeader = ({
   onAfterSubmitChange,
   externallySetEdit,
   small,
+  inputProps = {},
   startInEditMode = false,
   ...headerProps
 }) => {
@@ -78,6 +79,7 @@ const EditableHeader = ({
           onChange={(e, { value }) => setLocalValue(value)}
           onBlur={handleSubmit}
           value={localValue}
+          {...inputProps}
         >
           <input
             className={classNames('editable-header-container input-inner', {})}
@@ -90,6 +92,13 @@ const EditableHeader = ({
             disabled: disabled && showDisabledCursor,
             inverted,
           })}
+          tabIndex={0}
+          role="button"
+          onFocus={() => {
+            if (!disabled) {
+              setEdit(true);
+            }
+          }}
           onClick={() => {
             if (!disabled) {
               setEdit(true);

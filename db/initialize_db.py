@@ -27,7 +27,6 @@ TABLES[
         `display_color` VARCHAR(45) NOT NULL,
         `insert_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`tag_id`),
-        UNIQUE KEY udx_tag_display_color (`display_color`),
         UNIQUE KEY udx_tag_title (`title`)
     );
 """
@@ -58,6 +57,7 @@ TABLES[
         `tag_id` INT(11) DEFAULT NULL,
         `project_id` INT(11) DEFAULT NULL,
         `status` ENUM('complete', 'incomplete', 'in-progress') NOT NULL DEFAULT 'incomplete',
+        `estimated_completion_time_minutes` INT(11) DEFAULT NULL,
         `due_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `original_due_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `days_put_off` INT AS (DATEDIFF(due_datetime, original_due_datetime)) VIRTUAL,
