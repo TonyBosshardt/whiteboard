@@ -2,7 +2,23 @@ import classNames from 'classnames';
 import React, { createRef, useEffect, useState } from 'react';
 import { TextArea } from 'semantic-ui-react';
 
-import './EditableTextArea.scss';
+import { KEYBOARD_CODES } from '../../util/constants.js';
+
+import variables from './EditableTextArea.scss';
+
+const { maxEditingHeight, minEditingHeight } = variables;
+
+const _effectiveHeight = (incomingScrollHeightPx) => {
+  if (incomingScrollHeightPx < +minEditingHeight) {
+    return +minEditingHeight;
+  }
+
+  if (incomingScrollHeightPx > +maxEditingHeight) {
+    return +maxEditingHeight;
+  }
+
+  return incomingScrollHeightPx;
+};
 
 const EditableTextArea = ({
   submitChanges,
@@ -13,6 +29,7 @@ const EditableTextArea = ({
   disabled,
   showDisabledCursor,
   inverted,
+  autoExpandHeight,
   ...textAreaProps
 }) => {
   const [isEdit, setEdit] = useState(false);
@@ -23,6 +40,22 @@ const EditableTextArea = ({
   }, [text]);
 
   const textAreaRef = createRef();
+
+  useEffect(() => {
+    if (!autoExpandHeight) return;
+
+    /** handle case where we're editing or just viewing */
+    const displayElem = document.getElementById('text-area-ref-display');
+    const activeElem = document.getElementById('text-area-ref-active');
+
+    if (displayElem) {
+      displayElem.style.height = `${_effectiveHeight(displayElem.scrollHeight) + 2}px`;
+    }
+
+    if (activeElem) {
+      activeElem.style.height = `${_effectiveHeight(activeElem.scrollHeight)}px`;
+    }
+  }, [text, localValue, autoExpandHeight]);
 
   useEffect(() => {
     if (isEdit || externallySetEdit) {
@@ -52,7 +85,7 @@ const EditableTextArea = ({
         <TextArea
           className="editable-text-area-active"
           onKeyPress={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === KEYBOARD_CODES.ENTER && !e.shiftKey) {
               handleSubmit();
 
               e.target.blur();
@@ -61,6 +94,7 @@ const EditableTextArea = ({
             }
           }}
           ref={textAreaRef}
+          id="text-area-ref-active"
           onChange={(e, { value }) => setLocalValue(value)}
           onBlur={() => {
             handleSubmit();
@@ -80,37 +114,19 @@ const EditableTextArea = ({
               setEdit(true);
             }
           }}
+          id="text-area-ref-display"
           onClick={() => {
             if (!disabled) {
               setEdit(true);
             }
           }}
           disabled={disabled}
-          value={text || ''}
+          value={localValue || ''}
           {...textAreaProps}
         />
       )}
     </div>
   );
 };
-
-// EditableTextArea.propTypes = {
-//   submitChanges: PropTypes.func.isRequired,
-//   text: PropTypes.string,
-//   disabled: PropTypes.bool,
-//   setExternalEdit: PropTypes.func,
-//   showDisabledCursor: PropTypes.bool,
-//   externallySetEdit: PropTypes.bool,
-//   containerProps: PropTypes.object,
-// };
-
-// EditableTextArea.defaultProps = {
-//   disabled: false,
-//   setExternalEdit: null,
-//   showDisabledCursor: true,
-//   externallySetEdit: false,
-//   containerProps: {},
-//   text: '',
-// };
 
 export default EditableTextArea;

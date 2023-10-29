@@ -15,7 +15,6 @@ import RecurringTaskSettings from './RecurringTaskSettings.js';
 const DEFAULT_DAYS_RECURRING = 90;
 
 const NewTaskModal = ({
-  open,
   onClose,
   initialDueDatetime,
   tags,
@@ -29,7 +28,7 @@ const NewTaskModal = ({
     originalDueDatetime: initialDueDatetime,
   });
 
-  const [isRecurring, setIsRecurring] = useState(true);
+  const [isRecurring, setIsRecurring] = useState(false);
   const [recurringTaskParams, setRecurringTaskParams] = useState({
     daysOfTheWeek: new Set(),
     everyNDay: null,
@@ -124,7 +123,7 @@ const NewTaskModal = ({
   })();
 
   return (
-    <Modal open={open} onClose={onClose} size="small" style={{ border: '1px solid lightgray' }}>
+    <Modal open onClose={onClose} size="small" style={{ border: '1px solid lightgray' }}>
       <Modal.Header
         className="flex text-white"
         style={{ backgroundColor: 'rgb(42 42 42)', borderBottom: '1px solid' }}
@@ -148,6 +147,7 @@ const NewTaskModal = ({
           <span className="text-white">Description</span>
           <EditableTextArea
             inverted
+            autoExpandHeight
             text={prototypeTaskParams.description}
             disabled={isLoading}
             submitChanges={(descEdit) => handleUpdateTaskParams('description', descEdit)}
@@ -168,7 +168,7 @@ const NewTaskModal = ({
               label="Recurring"
               className="text-white action-area"
               style={{ padding: '0.5em' }}
-              checked={isRecurring}
+              checked={!!isRecurring}
               onChange={() => setIsRecurring(!isRecurring)}
             />
           </div>

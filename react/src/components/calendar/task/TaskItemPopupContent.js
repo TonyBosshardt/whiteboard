@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
-import { Button, Header, Icon } from 'semantic-ui-react';
+import { Button, Checkbox, Header, Icon } from 'semantic-ui-react';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../../util/DateHelpers.js';
 import EditableHeader from '../../ui/EditableHeader.js';
@@ -14,6 +14,8 @@ const TaskItemPopupContent = ({
   isLoading,
   task,
   tags,
+  setPopupOpen,
+  handleDuplicateTask,
 }) => {
   const {
     title,
@@ -24,6 +26,7 @@ const TaskItemPopupContent = ({
     dueDatetime,
     originalDueDatetime,
     estimatedCompletionTimeMinutes,
+    isUrgent,
   } = task;
 
   return (
@@ -56,6 +59,7 @@ const TaskItemPopupContent = ({
           inverted
           disabled={isLoading}
           text={description}
+          autoExpandHeight
           submitChanges={(descEdit) =>
             handleUpdateTask({
               description: descEdit,
@@ -69,19 +73,20 @@ const TaskItemPopupContent = ({
           <InvertedDropdown
             options={tags.map((t) => ({ text: t.title, value: t.id }))}
             value={tag?.id}
-            loading={isLoading}
-            onChange={(e, { value }) =>
-              handleUpdateTask({
+            onChange={async (e, { value }) => {
+              await handleUpdateTask({
                 tagId: value,
-              })
-            }
+              });
+              /** force popup to stay open after using dropdown */
+              setPopupOpen(true);
+            }}
           />
         </div>
         <div className="flex flex-col flex-grow" style={{ marginLeft: '0.25em' }}>
-          <span style={{ fontSize: '0.75rem' }}>Time to Complete (m)</span>
+          <span style={{ fontSize: '0.75rem' }}>Est Completion Time (m)</span>
           <EditableHeader
             inverted
-            text={estimatedCompletionTimeMinutes}
+            text={estimatedCompletionTimeMinutes || ''}
             inputProps={{ fluid: true }}
             submitChanges={(timeEdit) =>
               handleUpdateTask({
@@ -96,6 +101,22 @@ const TaskItemPopupContent = ({
             }}
           />
         </div>
+      </div>
+      <div className="flex" style={{ marginBottom: '1em' }}>
+        <Checkbox
+          label="Must be completed today"
+          className="text-white action-area"
+          style={{ padding: '0.5em' }}
+          checked={!!isUrgent}
+          onChange={async () => {
+            await handleUpdateTask({
+              isUrgent: isUrgent ? 0 : 1,
+            });
+
+            /** force popup to stay open after using dropdown */
+            setPopupOpen(true);
+          }}
+        />
       </div>
       <div className="flex">
         <div className="flex flex-col" style={{ margin: 'auto auto 0 0' }}>
@@ -124,18 +145,34 @@ const TaskItemPopupContent = ({
         </div>
       </div>
       <div className="flex" style={{ marginTop: '1em' }}>
-        <Button
-          color="red"
-          style={{ margin: 'auto auto auto 0', fontSize: '0.7em' }}
-          size="tiny"
-          onClick={async () => {
-            await handleUpdateTask({ isDeleted: 1 });
-
-            // TODO: refetch tasks for the specific day to hide this deleted task
-          }}
-        >
-          Delete
-        </Button>
+        <Button.Group size="tiny">
+          <Button
+            color="red"
+            className="flex"
+            style={{ padding: '0.75em' }}
+            onClick={async () => handleUpdateTask({ isDeleted: 1 })}
+          >
+            <Icon
+              name="trash alternate outline"
+              style={{
+                margin: 'auto',
+              }}
+            />
+          </Button>
+          <Button
+            color="blue"
+            className="flex"
+            style={{ padding: '0.75em' }}
+            onClick={handleDuplicateTask}
+          >
+            <Icon
+              name="copy"
+              style={{
+                margin: 'auto',
+              }}
+            />
+          </Button>
+        </Button.Group>
         <div style={{ margin: 'auto 0 0 auto' }}>
           <Button.Group size="tiny">
             <Button

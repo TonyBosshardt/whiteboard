@@ -54,6 +54,12 @@ module.exports = merge(baseConfig, {
           },
           {
             loader: 'css-loader', // translates CSS into CommonJS
+            options: {
+              importLoaders: 1,
+              modules: {
+                mode: 'icss',
+              },
+            },
           },
           {
             loader: 'sass-loader', // compiles Sass to CSS

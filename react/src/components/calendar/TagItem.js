@@ -66,7 +66,7 @@ const TagItem = ({
           )}
           <Label
             size={isDayMode ? 'large' : 'small'}
-            className="flex tag-item-label"
+            className="flex tag-item-label protected-text"
             style={{ backgroundColor: displayColor, margin: 1 }}
           >
             <span className="flex-grow text-white">{title}</span>

@@ -42,7 +42,9 @@ const EditableHeader = ({
     if (localValue !== text) {
       submitChanges(localValue);
     }
+
     setEdit(false);
+
     if (onAfterSubmitChange) onAfterSubmitChange();
   };
 
@@ -109,7 +111,7 @@ const EditableHeader = ({
             style={{ margin: 'auto auto auto 0.5em', color: inverted ? 'white' : '' }}
             {...headerProps}
           >
-            {text}
+            {localValue}
           </Header>
         </span>
       )}

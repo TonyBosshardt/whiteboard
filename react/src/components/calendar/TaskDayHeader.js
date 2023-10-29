@@ -32,15 +32,16 @@ const TaskDayHeader = ({
 
   return (
     <>
-      <NewTaskModal
-        open={isCreateModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        initialDueDatetime={dateTime}
-        tags={tags}
-        isDayMode={isDayMode}
-        selectedMode={selectedMode}
-        effectiveCurrentDatetime={effectiveCurrentDatetime}
-      />
+      {isCreateModalOpen && (
+        <NewTaskModal
+          onClose={() => setCreateModalOpen(false)}
+          initialDueDatetime={dateTime}
+          tags={tags}
+          isDayMode={isDayMode}
+          selectedMode={selectedMode}
+          effectiveCurrentDatetime={effectiveCurrentDatetime}
+        />
+      )}
       <div
         className="flex day-header-tray flex-grow"
         onMouseEnter={() => setIsHovering(true)}

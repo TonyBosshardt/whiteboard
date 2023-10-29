@@ -37,6 +37,7 @@ const typeDefs = `#graphql
     description: String
     dueDatetime: DateTime
     estimatedCompletionTimeMinutes: Int
+    isUrgent: Int
     originalDueDatetime: DateTime
     project: Project
     status: String
@@ -52,6 +53,7 @@ const typeDefs = `#graphql
     title: String
     estimatedCompletionTimeMinutes: Int
     description: String
+    isUrgent: Int
     tagId: ID
     projectId: ID
     status: String

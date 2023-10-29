@@ -40,3 +40,7 @@ export const STANDARD_COLOR_LIST = [
   '#767676',
   '#1b1c1d',
 ];
+
+export const DRAG_ITEM_TYPES = {
+  TASK: 'task',
+};

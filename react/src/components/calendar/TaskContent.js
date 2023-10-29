@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -18,6 +19,8 @@ const TaskContent = ({
   isoDate,
   getLocalValue,
   setLocalValue,
+  effectiveCurrentDatetime,
+  selectedMode,
 }) => {
   const totalTaskCount = completeTasks.length + incompleteTasks.length;
   const tasksAllComplete = completeTasks.length === totalTaskCount;
@@ -61,11 +64,25 @@ const TaskContent = ({
       />
       {isExpanded ? (
         <div className="flex flex-col" style={{ marginBottom: '0.5em' }}>
-          {incompleteTasks.map((task) => (
-            <TaskItem key={task.id} task={task} isDayMode={isDayMode} tags={tags} />
+          {_.sortBy(incompleteTasks, (ic) => -ic.isUrgent).map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              isDayMode={isDayMode}
+              tags={tags}
+              selectedMode={selectedMode}
+              effectiveCurrentDatetime={effectiveCurrentDatetime}
+            />
           ))}
           {completeTasks.map((task) => (
-            <TaskItem key={task.id} task={task} isDayMode={isDayMode} tags={tags} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              isDayMode={isDayMode}
+              tags={tags}
+              selectedMode={selectedMode}
+              effectiveCurrentDatetime={effectiveCurrentDatetime}
+            />
           ))}
         </div>
       ) : null}

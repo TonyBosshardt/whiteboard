@@ -144,3 +144,13 @@ $ROUNDED_BORDER: 0.28em;
 .ui.checkbox input.hidden + label {
     color: white;
 }
+
+.protected-text {
+    text-shadow:
+        0 0 0.1em #000000,
+        0 0 0.1em #000000,
+        0 0 0.1em #000000,
+        0 0 0.1em #000000,
+        0 0 0.1em #000000,
+        0 0 0.1em #000000;
+}

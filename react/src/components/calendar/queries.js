@@ -15,6 +15,7 @@ export const TASK_FIELDS = gql`
     daysPutOff
     estimatedCompletionTimeMinutes
     originalDueDatetime
+    isUrgent
     user {
       id
       firstName

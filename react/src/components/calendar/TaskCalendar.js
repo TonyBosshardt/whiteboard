@@ -1,5 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client';
 import React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
@@ -91,20 +93,22 @@ const TaskCalendar = ({ getQueryParamValue }) => {
   );
 
   return (
-    <div
-      className="flex flex-col task-calendar text-white"
-      style={{ flex: 1, marginTop: '5em', overflowY: 'auto' }}
-    >
-      <CalendarBody
-        effectiveCurrentDatetime={effectiveCurrentDatetime}
-        tasks={tasks}
-        tags={tags}
-        effectiveWindowSize={effectiveWindowSize}
-        isDayMode={isDayMode}
-        chunkedByWeek={chunkedByWeek}
-        selectedMode={selectedMode}
-      />
-    </div>
+    <DndProvider backend={HTML5Backend}>
+      <div
+        className="flex flex-col task-calendar text-white"
+        style={{ flex: 1, marginTop: '5em', overflowY: 'auto' }}
+      >
+        <CalendarBody
+          effectiveCurrentDatetime={effectiveCurrentDatetime}
+          tasks={tasks}
+          tags={tags}
+          effectiveWindowSize={effectiveWindowSize}
+          isDayMode={isDayMode}
+          chunkedByWeek={chunkedByWeek}
+          selectedMode={selectedMode}
+        />
+      </div>
+    </DndProvider>
   );
 };
 

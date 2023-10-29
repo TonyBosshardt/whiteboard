@@ -15,6 +15,7 @@ const ResizableInput = ({ value }) => {
       // current.style.width = `${_localValue.length}ch`;
     }
   }, [inputRef]);
+
   const handleChangeAndSize = ({ target }) => {
     if (!inputRef?.current) {
       return;
