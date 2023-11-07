@@ -44,10 +44,8 @@ const TaskDay = ({
     drop: (item) => {
       const { ids } = item;
 
-      const updatedDueDate = dateTime.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT);
-
       return handleUpdateTasks(ids, {
-        dueDatetime: updatedDueDate,
+        dueDatetime: dateTime.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT),
       });
     },
     collect: (monitor) => ({

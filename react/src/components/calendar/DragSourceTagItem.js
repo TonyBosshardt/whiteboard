@@ -16,12 +16,17 @@ const DragSourceTagItem = ({
   totalTaskCount,
   incompleteTasks,
 }) => {
-  const [, dragRef] = useDrag(() => ({
-    type: DRAG_ITEM_TYPES.TAG_DAY,
-    canDrag: () => !tasksAllComplete,
-    item: { ids: incompleteTasks.map((t) => t.id) },
-    collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
-  }));
+  const incompleteTaskIds = incompleteTasks.map((t) => t.id);
+
+  const [, dragRef] = useDrag(
+    () => ({
+      type: DRAG_ITEM_TYPES.TAG_DAY,
+      canDrag: () => !tasksAllComplete,
+      item: { ids: incompleteTaskIds },
+      collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+    }),
+    [incompleteTaskIds],
+  );
 
   return (
     <div className="flex tag-item-header" onClick={() => setIsExpanded(!isExpanded)} ref={dragRef}>
