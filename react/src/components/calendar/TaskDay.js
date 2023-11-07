@@ -8,7 +8,7 @@ import { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import { DRAG_ITEM_TYPES, TASK_STATUS } from '../../util/constants.js';
 import TaskContent from './TaskContent.js';
 import TaskDayHeader from './TaskDayHeader.js';
-import { TASK_UPDATE } from './mutations.js';
+import { TASKS_UPDATE } from './mutations.js';
 
 const TaskDay = ({
   dateTime,
@@ -29,24 +29,25 @@ const TaskDay = ({
   const hasTasksForToday = !!tasksForDate.length;
 
   const tasksByTagId = _.groupBy(tasksForDate, (t) => t.tag?.id || 'NONE');
+  const [onUpdateTasks] = useMutation(TASKS_UPDATE);
 
-  const [onUpdateTask] = useMutation(TASK_UPDATE);
-
-  const handleUpdateTask = async (taskId, input) =>
-    onUpdateTask({
+  const handleUpdateTasks = (taskIds, input) =>
+    onUpdateTasks({
       variables: {
-        id: taskId,
+        ids: taskIds,
         input,
       },
     });
 
   const [{ isOver }, dropRef] = useDrop(() => ({
-    accept: DRAG_ITEM_TYPES.TASK,
+    accept: [DRAG_ITEM_TYPES.TASK, DRAG_ITEM_TYPES.TAG_DAY],
     drop: (item) => {
-      const { id } = item;
+      const { ids } = item;
 
-      return handleUpdateTask(id, {
-        dueDatetime: dateTime.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT),
+      const updatedDueDate = dateTime.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT);
+
+      return handleUpdateTasks(ids, {
+        dueDatetime: updatedDueDate,
       });
     },
     collect: (monitor) => ({

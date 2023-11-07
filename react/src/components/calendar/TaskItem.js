@@ -60,7 +60,7 @@ const TaskItem = ({ task, isDayMode, tags, effectiveCurrentDatetime, selectedMod
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: DRAG_ITEM_TYPES.TASK,
     canDrag: () => !isComplete,
-    item: { id },
+    item: { ids: [id] },
     collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
   }));
 

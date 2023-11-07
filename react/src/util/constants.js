@@ -43,4 +43,5 @@ export const STANDARD_COLOR_LIST = [
 
 export const DRAG_ITEM_TYPES = {
   TASK: 'task',
+  TAG_DAY: 'tagDay',
 };

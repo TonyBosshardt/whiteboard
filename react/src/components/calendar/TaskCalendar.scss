@@ -1,4 +1,9 @@
 $CURRENT_DAY_COLOR: #2185d0;
+$ROW_HOVER_BORDER_COLOR_FULL: rgba(255, 255, 255, 0.5);
+$ROW_HOVER_BACKGROUND_COLOR_LIGHT: rgba(255, 255, 255, 0.033);
+$ROUNDED_CORNER: 0.28em;
+
+$DEFAULT_TRANSITION_MS: 60ms;
 
 .ui.right.center.popup:before {
     background: rgb(42, 42, 42);
@@ -21,19 +26,15 @@ $CURRENT_DAY_COLOR: #2185d0;
 
 .task-calendar {
     .day-header-tray {
-        // flex: 1;
         border-bottom: 1px solid transparent;
 
         .complete-count-badge {
+            font-size: 0.8em;
             margin: auto auto auto 0;
             border-radius: 0.28em;
             background-color: #767676;
-            padding: 0.15em;
+            padding: 0.15em 0.55em;
         }
-    }
-
-    .day-header-tray:hover {
-        // border-bottom: 1px solid white;
     }
 
     .weekday-header {
@@ -59,22 +60,21 @@ $CURRENT_DAY_COLOR: #2185d0;
         padding: 0.5em;
         border-right: 1px solid lightgray;
         width: calc(100vw / 7);
+
         &.day {
             width: 100%;
         }
     }
 
-    .activity-day:hover {
-        background-color: rgba(0, 0, 0, 0.025);
-    }
+    // .activity-day:hover {
+    //     background-color: rgba(0, 0, 0, 0.05);
+    // }
 
     .activity-day:first-child {
         border-left: none;
-        // 1px solid lightgray;
     }
 
     .activity-day:last-child {
-        margin-right: auto;
         border-right: none;
     }
 
@@ -88,6 +88,7 @@ $CURRENT_DAY_COLOR: #2185d0;
         text-align: center;
         vertical-align: middle;
         user-select: none;
+
         &.today {
             background-color: $CURRENT_DAY_COLOR;
         }
@@ -96,79 +97,31 @@ $CURRENT_DAY_COLOR: #2185d0;
         }
     }
 
-    .activity-group-button {
-        user-select: none;
+    .tag-item-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
         cursor: pointer;
-        padding: 0.25em;
-        transition: background-color 50ms ease-in;
-    }
-
-    .activity-group-button:active {
-        background-color: rgba(0, 0, 0, 1);
-    }
-
-    .activity-group-button:first-child {
-        border-radius: 0.28em 0.28em 0 0;
-    }
-
-    .activity-group-button:last-child {
-        border-radius: 0 0 0.28em 0.28em;
-    }
-
-    .group-row {
-        padding: 0.2em;
-        font-size: 0.9em;
-        cursor: pointer;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-    }
-
-    .group-row:last-child {
-        border-bottom: none;
-    }
-
-    .group-row:hover {
-        background-color: rgba(0, 0, 0, 0.08);
-    }
-
-    .group-row:active {
-        background-color: rgba(0, 0, 0, 0.1);
-    }
-
-    .status-badge {
-        border-radius: 0.28em;
-        padding: 0.25em;
-        text-transform: uppercase;
-        font-weight: 450;
-        user-select: none;
-        font-size: 0.75em;
-    }
-
-    .status-badge-list {
-        padding: 0.25em;
-        border-radius: 0.28em;
-        transition: background-color 50ms ease-in;
-    }
-
-    .status-badge-list:hover {
-        background-color: rgba(0, 0, 0, 0.08);
     }
 
     .tag-item-label {
         flex: 1;
-        margin-right: 1em;
         user-select: none;
-        outline: 1px solid rgba(255, 255, 255, 0.15);
-    }
+        margin: -2px -2px -2px -2px;
 
-    .tag-item-label:hover {
-        outline: 1px solid rgba(255, 255, 255, 0.33);
+        &.expanded {
+            border-radius: 0.28em 0.28em 0 0;
+        }
+        &.complete {
+            border-radius: 0.28em 0.28em 0 0;
+        }
     }
 
     .task-item {
         border-bottom: 0.5px solid transparent;
         border-top: 0.5px solid transparent;
         padding: 0.5em;
-        transition: 60ms ease-in;
+        transition: $DEFAULT_TRANSITION_MS ease-in;
         margin-top: -0.5px;
         position: relative;
         cursor: pointer;
@@ -176,14 +129,12 @@ $CURRENT_DAY_COLOR: #2185d0;
         &.day-mode {
             font-size: 1em;
         }
-
         &.complete {
             text-decoration: line-through;
         }
-
         &.open {
-            border-color: rgba(255, 255, 255, 0.5);
-            background-color: rgba(255, 255, 255, 0.033);
+            border-color: $ROW_HOVER_BORDER_COLOR_FULL;
+            background-color: $ROW_HOVER_BACKGROUND_COLOR_LIGHT;
         }
     }
 
@@ -192,21 +143,12 @@ $CURRENT_DAY_COLOR: #2185d0;
     }
 
     .task-item:first-child {
-        margin-top: none;
+        margin-top: calc(0.5em + 2px);
     }
 
     .task-item:hover {
-        border-color: rgba(255, 255, 255, 0.5);
-        background-color: rgba(255, 255, 255, 0.033);
-    }
-
-    .tag-item-header {
-        margin-bottom: 0.5em;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        cursor: pointer;
-        background-color: #474747;
+        border-color: $ROW_HOVER_BORDER_COLOR_FULL;
+        background-color: $ROW_HOVER_BACKGROUND_COLOR_LIGHT;
     }
 
     .task-day-container {
@@ -214,6 +156,7 @@ $CURRENT_DAY_COLOR: #2185d0;
         height: 100%;
         font-size: 0.9em;
         line-height: normal;
+
         &.day-mode {
             font-size: 1.15em;
         }
@@ -221,9 +164,22 @@ $CURRENT_DAY_COLOR: #2185d0;
 
     .expand-icon {
         transform: rotate(0);
-        transition: transform 60ms ease-in;
+        transition: transform $DEFAULT_TRANSITION_MS ease-in;
+
         &.open {
             transform: rotate(90deg);
+        }
+    }
+
+    .task-content-outer {
+        margin-bottom: 0.5em;
+        border-radius: $ROUNDED_CORNER;
+        background-color: rgba(0, 0, 0, 0.15);
+
+        transition: background-color $DEFAULT_TRANSITION_MS ease-in;
+
+        &.expanded {
+            margin-bottom: calc(0.5em + 2px);
         }
     }
 }
