@@ -1,8 +1,14 @@
 $ROUNDED_BORDER: 0.28em;
+$DARK_MODE_BACKGROUND_COLOR: #222222d1;
+$STD_TRANSITION_TIME: 60ms;
+
+body {
+    overscroll-behavior-y: none;
+}
 
 .root-container {
     min-height: 100vh;
-    background-color: #222222d1;
+    background-color: $DARK_MODE_BACKGROUND_COLOR;
     flex: 1;
 }
 
@@ -87,46 +93,6 @@ $ROUNDED_BORDER: 0.28em;
     justify-content: space-around;
 }
 
-.gaps-col {
-    & > * {
-        margin-bottom: 0.8em;
-    }
-
-    & > *:last-child {
-        margin-bottom: 0;
-    }
-}
-
-.gaps-col-small {
-    & > * {
-        margin-bottom: 0.4em;
-    }
-
-    & > *:last-child {
-        margin-bottom: 0;
-    }
-}
-
-.gaps-col-large {
-    & > * {
-        margin-bottom: 1.6em;
-    }
-
-    & > *:last-child {
-        margin-bottom: 0;
-    }
-}
-
-.gaps-row {
-    & > * {
-        margin-right: 0.8em;
-    }
-
-    & > *:last-child {
-        margin-right: 0;
-    }
-}
-
 .round-corner {
     border-radius: $ROUNDED_BORDER;
 }
@@ -134,7 +100,7 @@ $ROUNDED_BORDER: 0.28em;
 .action-area {
     cursor: pointer;
     border-radius: $ROUNDED_BORDER;
-    transition: background-color 60ms ease-in;
+    transition: background-color $STD_TRANSITION_TIME ease-in;
 }
 
 .action-area:hover {
