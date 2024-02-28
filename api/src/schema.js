@@ -36,6 +36,8 @@ const typeDefs = `#graphql
     daysPutOff: Int # generated column, 
     description: String
     dueDatetime: DateTime
+    estimatedCompletionTimeMinutes: Int
+    isUrgent: Int
     originalDueDatetime: DateTime
     project: Project
     status: String
@@ -49,7 +51,9 @@ const typeDefs = `#graphql
   input TaskCreateInput {
     userId: ID
     title: String
+    estimatedCompletionTimeMinutes: Int
     description: String
+    isUrgent: Int
     tagId: ID
     projectId: ID
     status: String

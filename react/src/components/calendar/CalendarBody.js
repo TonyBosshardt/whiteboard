@@ -20,7 +20,7 @@ const CalendarBody = ({
 }) => {
   const weekHeight = `calc((${ROOT_DIV_HEIGHT} - ${TOP_MARGIN} - ${
     isDayMode ? 0 : DAY_HEADER_HEIGHT_PX
-  }px) / ${chunkedByWeek.length})`;
+  }px - 2px) / ${chunkedByWeek.length})`;
 
   const tasksByISODate = _.groupBy(tasks, (t) =>
     DateHelpers.convertToDateTime(t.dueDatetime).toISODate(),
@@ -29,7 +29,7 @@ const CalendarBody = ({
   const keyedTags = _.keyBy(tags, (t) => t.id);
 
   return (
-    <div className="flex flex-col" style={{ flex: 1 }}>
+    <div className="flex flex-col flex-grow" style={{ flex: 1, margin: '0 2px 2px 2px' }}>
       {!isDayMode && (
         <WeekdayHeader
           effectiveWindowSize={effectiveWindowSize}

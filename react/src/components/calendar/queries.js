@@ -11,8 +11,11 @@ export const TAG_FIELDS = gql`
 export const TASK_FIELDS = gql`
   fragment TaskFields on Task {
     id
+    completeDatetime
     daysPutOff
+    estimatedCompletionTimeMinutes
     originalDueDatetime
+    isUrgent
     user {
       id
       firstName
@@ -26,7 +29,6 @@ export const TASK_FIELDS = gql`
     dueDatetime
     status
     insertDatetime
-    completeDatetime
   }
 `;
 

@@ -1,10 +1,14 @@
+import { useMutation } from '@apollo/client';
 import classNames from 'classnames';
 import _ from 'lodash';
 import React from 'react';
+import { useDrop } from 'react-dnd';
 
-import { TASK_STATUS } from '../../util/constants.js';
+import { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
+import { DRAG_ITEM_TYPES, TASK_STATUS } from '../../util/constants.js';
 import TaskContent from './TaskContent.js';
 import TaskDayHeader from './TaskDayHeader.js';
+import { TASKS_UPDATE } from './mutations.js';
 
 const TaskDay = ({
   dateTime,
@@ -25,14 +29,42 @@ const TaskDay = ({
   const hasTasksForToday = !!tasksForDate.length;
 
   const tasksByTagId = _.groupBy(tasksForDate, (t) => t.tag?.id || 'NONE');
+  const [onUpdateTasks] = useMutation(TASKS_UPDATE);
+
+  const handleUpdateTasks = (taskIds, input) =>
+    onUpdateTasks({
+      variables: {
+        ids: taskIds,
+        input,
+      },
+    });
+
+  const [{ isOver }, dropRef] = useDrop(() => ({
+    accept: [DRAG_ITEM_TYPES.TASK, DRAG_ITEM_TYPES.TAG_DAY],
+    drop: (item) => {
+      const { ids } = item;
+
+      return handleUpdateTasks(ids, {
+        dueDatetime: dateTime.set({ hour: 12, minute: 0 }).toFormat(SQL_DATE_TIME_FORMAT),
+      });
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
 
   return (
     <div
+      ref={dropRef}
       className={classNames('flex flex-col activity-day', {
         inactive,
         day: isDayMode,
         'has-activities': hasTasksForToday,
       })}
+      style={{
+        outline: isOver && '2px solid white',
+        borderRadius: isOver && '0.28em',
+      }}
       onClick={() => {
         if (hasTasksForToday) {
           onClickToday();
@@ -78,6 +110,8 @@ const TaskDay = ({
                 incompleteTasks={incompleteTasks || []}
                 isDayMode={isDayMode}
                 tags={tags}
+                selectedMode={selectedMode}
+                effectiveCurrentDatetime={effectiveCurrentDatetime}
               />
             );
           })}

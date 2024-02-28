@@ -1,220 +1,240 @@
 import { useMutation } from '@apollo/client';
 import classNames from 'classnames';
 import React, { useState } from 'react';
+import { useDrag } from 'react-dnd';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Button, Checkbox, Header, Icon, Popup } from 'semantic-ui-react';
+import { Checkbox, Icon, Popup } from 'semantic-ui-react';
 
-import DateHelpers, { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
-import { KEYBOARD_CODES, TASK_STATUS } from '../../util/constants.js';
-import EditableHeader from '../ui/EditableHeader.js';
-import EditableTextArea from '../ui/EditableTextArea.js';
-import InvertedDropdown from '../ui/InvertedDropdown.js';
-import { TASK_UPDATE } from './mutations.js';
+import DateHelpers from '../../util/DateHelpers.js';
+import { DRAG_ITEM_TYPES, KEYBOARD_CODES, TASK_STATUS } from '../../util/constants.js';
+import { resolveQueryVariables } from '../navbar/NavBar.js';
+import { CREATE_TASK, TASK_UPDATE } from './mutations.js';
+import { GET_TASKS } from './queries.js';
+import TaskItemPopupContent from './task/TaskItemPopupContent.js';
 
-const TaskItem = ({ task, isDayMode, tags }) => {
-  const {
-    id,
-    title,
-    description,
-    daysPutOff,
-    originalDueDatetime,
-    dueDatetime,
-    completeDatetime,
-    status,
-    tag,
-  } = task;
+const CompletionTimeBadge = ({ estimatedCompletionTimeMinutes, size }) => (
+  <span
+    className="round-corner"
+    style={{
+      padding: '0.25em',
+      fontSize: size || '0.8em', // default to `smaller`
+      backgroundColor: 'rgba(0, 0, 0, 0.55)',
+      whiteSpace: 'pre',
+    }}
+  >
+    <Icon name="clock outline" />
+    {estimatedCompletionTimeMinutes}m
+  </span>
+);
+
+const POPUP_POSITIONS = {
+  TOP_LEFT: 'top left',
+  LEFT_CENTER: 'left center',
+};
+
+const MIN_HEIGHT_FOR_POPUP_PX = 150;
+
+const _resolveEffectivePopupPosition = ({ id }) => {
+  const elem = document.getElementById(id);
+  const rect = elem.getBoundingClientRect();
+
+  if (window.innerHeight - rect.bottom < MIN_HEIGHT_FOR_POPUP_PX) {
+    return POPUP_POSITIONS.TOP_LEFT;
+  }
+
+  return POPUP_POSITIONS.LEFT_CENTER;
+};
+
+const TaskItem = ({ task, isDayMode, tags, effectiveCurrentDatetime, selectedMode }) => {
+  const { id, title, estimatedCompletionTimeMinutes, status, isUrgent } = task;
+  const isComplete = status === TASK_STATUS.COMPLETE;
+
+  const [onUpdateTask] = useMutation(TASK_UPDATE);
+  const [onCreateTask] = useMutation(CREATE_TASK);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickEditTitle, setIsQuickEditTitle] = useState(false);
+  const [effectivePopupPosition, setEffectivePopupPosition] = useState(POPUP_POSITIONS.LEFT_CENTER);
+  const [popupOpen, _setPopupOpen] = useState(false);
+
+  const [{ isDragging }, dragRef] = useDrag(() => ({
+    type: DRAG_ITEM_TYPES.TASK,
+    canDrag: () => !isComplete,
+    item: { ids: [id] },
+    collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+  }));
+
+  const setPopupOpen = (nextState) => {
+    if (nextState) {
+      setEffectivePopupPosition(_resolveEffectivePopupPosition({ id }));
+      _setPopupOpen(true);
+    } else {
+      _setPopupOpen(false);
+    }
+  };
 
   useHotkeys([KEYBOARD_CODES.ENTER], (e) => {
     e.preventDefault();
 
     if (window.currentHoverTaskId === id && document.activeElement === document.body) {
+      setPopupOpen(true);
       setIsQuickEditTitle(true);
     }
   });
 
-  const isComplete = status === TASK_STATUS.COMPLETE;
-
-  const [onUpdateTask] = useMutation(TASK_UPDATE);
-
-  const handleUpdateTask = async (input, mutationProps = {}) => {
+  const _wrapMutation = async (mutation) => {
     setIsLoading(true);
 
-    await onUpdateTask({
-      variables: {
-        id,
-        input,
-      },
-      ...mutationProps,
-    });
+    await mutation;
 
     setIsLoading(false);
   };
 
+  const handleUpdateTask = async (input, mutationProps = {}) => {
+    _wrapMutation(
+      onUpdateTask({
+        variables: {
+          id,
+          input,
+        },
+        ...mutationProps,
+      }),
+    );
+  };
+
+  const handleDuplicateTask = () => {
+    const dueDatetime = DateHelpers.dateTimeToSQLFormat(DateHelpers.getCurrentDatetime());
+
+    return _wrapMutation(
+      onCreateTask({
+        variables: {
+          input: [
+            {
+              title,
+              originalDueDatetime: dueDatetime,
+              dueDatetime,
+              tagId: task.tag.id,
+              userId: '1',
+            },
+          ],
+        },
+        refetchQueries: [
+          {
+            query: GET_TASKS,
+            variables: resolveQueryVariables({
+              selectedMode,
+              effectiveCurrentDatetime,
+              isDayMode,
+            }),
+          },
+        ],
+      }),
+    );
+  };
+
   return (
     <Popup
-      position={!isDayMode ? 'left center' : 'bottom right'}
+      position={isDayMode ? 'bottom right' : effectivePopupPosition}
       on="hover"
       hoverable
-      onClose={() => setIsQuickEditTitle(false)}
+      open={popupOpen}
+      onClose={() => {
+        setPopupOpen(false);
+        setIsQuickEditTitle(false);
+      }}
       trigger={
         <div
           id={id}
-          className={classNames('flex task-item', { 'day-mode': isDayMode })}
-          style={{
-            textDecoration: isComplete ? 'line-through' : 'none',
+          ref={dragRef}
+          onDragStart={() => {
+            setPopupOpen(false);
           }}
-          onClick={() => setIsQuickEditTitle(true)}
+          onDragEnd={() => {}}
+          className={classNames('flex task-item', {
+            'day-mode': isDayMode,
+            dragging: isDragging,
+            complete: isComplete,
+            open: popupOpen,
+          })}
+          style={{ cursor: isDragging && 'grabbing' }}
+          onClick={() => {
+            setPopupOpen(true);
+            setIsQuickEditTitle(true);
+          }}
           onMouseEnter={() => (window.currentHoverTaskId = id)}
           onMouseLeave={() => (window.currentHoverTaskId = null)}
         >
-          <Checkbox
-            style={{ margin: '0 0.5em auto 0' }}
-            checked={isComplete}
-            onChange={(e) => {
-              e.stopPropagation();
-              const payload = {};
-              if (!isComplete) {
-                payload.status = 'complete';
-                payload.completeDatetime =
-                  DateHelpers.getCurrentDatetime().toFormat(SQL_DATE_TIME_FORMAT);
-              } else {
-                payload.status = 'incomplete';
-                payload.completeDatetime = null;
-              }
-              handleUpdateTask(payload);
-            }}
-            disabled={isLoading}
-          />
-          <span style={{ margin: 'auto auto auto 0' }}>{title}</span>
+          <div className="flex" style={{ margin: '0 0.5em auto 0' }}>
+            <Checkbox
+              checked={isComplete}
+              onChange={(e) => {
+                e.stopPropagation();
+                const payload = {};
+
+                if (!isComplete) {
+                  payload.status = TASK_STATUS.COMPLETE;
+                  payload.completeDatetime = DateHelpers.dateTimeToSQLFormat(
+                    DateHelpers.getCurrentDatetime(),
+                  );
+                } else {
+                  payload.status = TASK_STATUS.INCOMPLETE;
+                  payload.completeDatetime = null;
+                }
+                handleUpdateTask(payload);
+              }}
+              disabled={isLoading}
+            />
+          </div>
+          <div className="flex flex-col flex-grow">
+            <span className="flex" style={{ margin: 'auto auto auto 0' }}>
+              <span>{title}</span>
+              {estimatedCompletionTimeMinutes && isDayMode && !isComplete ? (
+                <div style={{ marginLeft: '0.5em' }}>
+                  <CompletionTimeBadge
+                    size="1em"
+                    estimatedCompletionTimeMinutes={estimatedCompletionTimeMinutes}
+                  />
+                </div>
+              ) : null}
+              {isUrgent && !isComplete && isDayMode ? (
+                <Icon
+                  name="exclamation triangle"
+                  color="yellow"
+                  style={{ margin: 'auto 0 auto 0.25em', fontSize: '1.2em' }}
+                />
+              ) : null}
+            </span>
+            {(estimatedCompletionTimeMinutes || isUrgent) && !isComplete && !isDayMode ? (
+              <div className="flex" style={{ marginTop: '0.25em' }}>
+                <div className="flex-grow" />
+                {estimatedCompletionTimeMinutes ? (
+                  <CompletionTimeBadge
+                    estimatedCompletionTimeMinutes={estimatedCompletionTimeMinutes}
+                  />
+                ) : null}
+                {isUrgent ? (
+                  <Icon
+                    name="exclamation triangle"
+                    color="yellow"
+                    style={{ margin: 'auto 0 auto 0.25em', fontSize: '1.2em' }}
+                  />
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       }
       content={
-        <div className="flex flex-col" style={{ color: 'whitesmoke' }}>
-          <div className="flex flex-col">
-            <span style={{ fontSize: '0.75rem' }}>Task</span>
-            <EditableHeader
-              inverted
-              text={title}
-              externallySetEdit={isQuickEditTitle}
-              onAfterSubmitChange={() => setIsQuickEditTitle(false)}
-              submitChanges={(nameEdit) => {
-                if (nameEdit) {
-                  handleUpdateTask({
-                    title: nameEdit,
-                  });
-                }
-              }}
-              disabled={isLoading}
-              containerProps={{
-                style: {
-                  fontSize: '0.9em',
-                },
-              }}
-            />
-          </div>
-          <div className="flex flex-col" style={{ marginBottom: '0.25em' }}>
-            <span style={{ fontSize: '0.75rem' }}>Description</span>
-            <EditableTextArea
-              inverted
-              disabled={isLoading}
-              text={description}
-              submitChanges={(descEdit) =>
-                handleUpdateTask({
-                  description: descEdit,
-                })
-              }
-            />
-          </div>
-          <div className="flex flex-col" style={{ marginBottom: '0.25em' }}>
-            <span style={{ fontSize: '0.75rem' }}>Tag</span>
-            <InvertedDropdown
-              options={tags.map((t) => ({ text: t.title, value: t.id }))}
-              value={tag?.id}
-              loading={isLoading}
-              onChange={(e, { value }) =>
-                handleUpdateTask({
-                  tagId: value,
-                })
-              }
-            />
-          </div>
-          <div className="flex">
-            <div className="flex flex-col" style={{ margin: 'auto auto 0 0' }}>
-              <span style={{ fontSize: '0.75rem' }}>Original Due Date</span>
-              <Header
-                className="text-white"
-                style={{ fontSize: '0.9em', margin: 0, padding: '0 0 0 0.75em' }}
-              >
-                {DateHelpers.convertToDateTime(originalDueDatetime).toFormat('LLL dd')}
-              </Header>
-            </div>
-            <div className="flex flex-col" style={{ margin: 'auto auto 0 auto' }}>
-              <span style={{ fontSize: '0.75rem' }}>Completion Date</span>
-              <Header
-                className="text-white"
-                style={{ fontSize: '0.9em', margin: 0, padding: '0 0 0 0.75em' }}
-              >
-                {completeDatetime
-                  ? DateHelpers.convertToDateTime(completeDatetime).toFormat('LLL dd')
-                  : '-'}
-              </Header>
-            </div>
-            <div className={classNames('procrastination-badge', { active: daysPutOff > 0 })}>
-              {daysPutOff > 0 && <Icon name="exclamation circle" color="red" />} Days Put Off:{' '}
-              {daysPutOff > 0 ? daysPutOff : 0}
-            </div>
-          </div>
-          <div className="flex" style={{ marginTop: '1em' }}>
-            <Button
-              color="red"
-              style={{ margin: 'auto auto auto 0', fontSize: '0.7em' }}
-              size="tiny"
-              onClick={async () => {
-                await handleUpdateTask({ isDeleted: 1 });
-
-                // TODO: refetch tasks for the specific day to hide this deleted task
-              }}
-            >
-              Delete
-            </Button>
-            <div style={{ margin: 'auto 0 0 auto' }}>
-              <Button.Group size="tiny">
-                <Button
-                  secondary
-                  style={{ padding: '0.75em' }}
-                  onClick={() =>
-                    handleUpdateTask({
-                      dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
-                        .set({ hour: 12, minute: 0 })
-                        .plus({ days: -1 })
-                        .toFormat(SQL_DATE_TIME_FORMAT),
-                    })
-                  }
-                >
-                  <Icon name="left arrow" />
-                  Move back
-                </Button>
-                <Button
-                  primary
-                  style={{ padding: '0.75em' }}
-                  onClick={() =>
-                    handleUpdateTask({
-                      dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
-                        .set({ hour: 12, minute: 0 })
-                        .plus({ days: 1 })
-                        .toFormat(SQL_DATE_TIME_FORMAT),
-                    })
-                  }
-                >
-                  Move forward <Icon name="right arrow" />
-                </Button>
-              </Button.Group>
-            </div>
-          </div>
-        </div>
+        <TaskItemPopupContent
+          isQuickEditTitle={isQuickEditTitle}
+          handleUpdateTask={handleUpdateTask}
+          handleDuplicateTask={handleDuplicateTask}
+          setIsQuickEditTitle={setIsQuickEditTitle}
+          isLoading={isLoading}
+          task={task}
+          tags={tags}
+          setPopupOpen={setPopupOpen}
+        />
       }
     />
   );

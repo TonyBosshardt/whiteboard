@@ -1,3 +1,11 @@
+$max_editing_height: 150; // px
+$min_editing_height: 75; // px
+
+:export {
+  maxEditingHeight: $max_editing_height;
+  minEditingHeight: $min_editing_height;
+}
+
 .editable-text-area-inactive {
   flex: 1;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -6,6 +14,9 @@
   color: white;
   background-color: transparent;
   padding: 0.5em;
+  max-height: #{$max_editing_height}px;
+  min-height: #{$min_editing_height}px;
+
   &.disabled {
     cursor: not-allowed;
   }
@@ -17,6 +28,8 @@
 
 .editable-text-area-active {
   flex: 1;
+  max-height: #{$max_editing_height}px;
+  min-height: #{$min_editing_height}px;
   outline: none;
   border-radius: 0.28em;
   border: 1px solid #85b7d9;
