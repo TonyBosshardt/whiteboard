@@ -23,6 +23,7 @@ export const KEYBOARD_CODES = {
   RIGHT_ARROW: 'right',
   LEFT_ARROW: 'left',
   E: 'e',
+  META: 'Meta', // Command key on Mac
 };
 
 export const STANDARD_COLOR_LIST = [

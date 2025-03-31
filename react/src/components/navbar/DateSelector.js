@@ -8,11 +8,11 @@ import { MODES } from '../calendar/CalendarHelpers.js';
 
 const MonthDisplay = forwardRef(({ onClick, effectiveCurrentDatetime }, ref) => (
   <div className="date-selector-outer" onClick={onClick} ref={ref}>
-    <Header style={{ color: 'white' }}>
+    <Header style={{ color: 'white', margin: 'auto' }}>
       {effectiveCurrentDatetime.toFormat('LLLL')}
-      <Header.Subheader style={{ fontSize: '0.7em', color: 'white' }}>
+      <span style={{ fontSize: '0.75em', color: 'gray', marginLeft: '0.5em' }}>
         {effectiveCurrentDatetime.toFormat('yyyy')}
-      </Header.Subheader>
+      </span>
     </Header>
   </div>
 ));

@@ -157,9 +157,13 @@ const TaskItem = ({ task, isDayMode, tags, effectiveCurrentDatetime, selectedMod
             open: popupOpen,
           })}
           style={{ cursor: isDragging && 'grabbing' }}
-          onClick={() => {
-            setPopupOpen(true);
-            setIsQuickEditTitle(true);
+          onClick={async ({ nativeEvent: { metaKey, ctrlKey } }) => {
+            if (metaKey || ctrlKey) {
+              await handleDuplicateTask();
+            } else {
+              setPopupOpen(true);
+              setIsQuickEditTitle(true);
+            }
           }}
           onMouseEnter={() => (window.currentHoverTaskId = id)}
           onMouseLeave={() => (window.currentHoverTaskId = null)}

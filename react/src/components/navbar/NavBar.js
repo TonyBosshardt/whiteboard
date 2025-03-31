@@ -134,7 +134,7 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
       <TagManager open={tagModalOpen} onClose={() => setTagModalOpen(false)} />
       <div className="navbar">
         <div className="flex outer">
-          <div className="flex" style={{ marginRight: 'auto' }}>
+          <div className="flex">
             <Input
               placeholder="quick add task to today ..."
               style={{ marginRight: '1em', width: '30em' }}
@@ -166,6 +166,11 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
               labelPosition="left"
             />
           </div>
+          <DateSelector
+            effectiveCurrentDatetime={effectiveCurrentDatetime}
+            replaceQueryParamValue={replaceQueryParamValue}
+            setQueryParamObject={setQueryParamObject}
+          />
           <div className="flex" style={{ margin: 'auto 1em auto auto' }}>
             <Button
               icon="tag"
@@ -182,12 +187,8 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
             options={MODE_OPTIONS.map((m) => ({ text: _.startCase(m), value: m }))}
             onChange={(e, { value }) => onChangeMode(value)}
           />
+
           <div className="flex text-white" style={{ margin: 'auto 0 auto 0' }}>
-            <DateSelector
-              effectiveCurrentDatetime={effectiveCurrentDatetime}
-              replaceQueryParamValue={replaceQueryParamValue}
-              setQueryParamObject={setQueryParamObject}
-            />
             <div className="flex" style={{ margin: 'auto 0 auto 0' }}>
               <Button
                 icon="arrow left"

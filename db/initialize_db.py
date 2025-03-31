@@ -4,9 +4,7 @@ from mysql.connector import errorcode
 DB_NAME = "goalie"
 
 TABLES = {}
-TABLES[
-    "user"
-] = """
+TABLES["user"] = """
     CREATE TABLE `user` (
         `user_id` INT(11) NOT NULL AUTO_INCREMENT,
         `first_name` VARCHAR(45) NOT NULL,
@@ -17,9 +15,7 @@ TABLES[
     );
 """
 
-TABLES[
-    "tag"
-] = """
+TABLES["tag"] = """
     CREATE TABLE `tag` (
         `tag_id` INT(11) NOT NULL AUTO_INCREMENT,
         `title` VARCHAR(45) NOT NULL,
@@ -32,30 +28,14 @@ TABLES[
 """
 
 
-TABLES[
-    "project"
-] = """
-    CREATE TABLE `project` (
-        `project_id` INT(11) NOT NULL AUTO_INCREMENT,
-        `title` VARCHAR(45) NOT NULL,
-        `description` VARCHAR(255) DEFAULT NULL,
-        `insert_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (`project_id`),
-        UNIQUE KEY udx_project_title (`title`)
-    );
-
-"""
-
-TABLES[
-    "task"
-] = """
+TABLES["task"] = """
     CREATE TABLE `task` (
         `task_id` INT(11) NOT NULL AUTO_INCREMENT,
         `user_id` INT(11) NOT NULL,
         `title` VARCHAR(255) NOT NULL,
         `description` VARCHAR(255) DEFAULT NULL,
         `tag_id` INT(11) DEFAULT NULL,
-        `project_id` INT(11) DEFAULT NULL,
+        `parent_task_id` INT(11) DEFAULT NULL,
         `status` ENUM('complete', 'incomplete', 'in-progress') NOT NULL DEFAULT 'incomplete',
         `estimated_completion_time_minutes` INT(11) DEFAULT NULL,
         `due_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -67,7 +47,7 @@ TABLES[
         PRIMARY KEY (`task_id`),
         FOREIGN KEY fk_task_user_id (user_id) REFERENCES user (user_id),
         FOREIGN KEY fk_task_tag_id (tag_id) REFERENCES tag (tag_id),
-        FOREIGN KEY fk_task_project_id (project_id) REFERENCES project (project_id)
+        FOREIGN KEY fk_task_task_id (parent_task_id) REFERENCES task (task_id),
     );
 """
 
