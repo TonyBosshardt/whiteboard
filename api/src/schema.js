@@ -22,13 +22,6 @@ const typeDefs = `#graphql
     insertDatetime: DateTime
   }
 
-  type Project {
-    id: ID
-    title: String
-    description: String
-    tasks: [Task]
-    insertDatetime: DateTime
-  }
 
   type Task {
     id: ID
@@ -39,8 +32,10 @@ const typeDefs = `#graphql
     estimatedCompletionTimeMinutes: Int
     isUrgent: Int
     originalDueDatetime: DateTime
-    project: Project
+    parentTask: Task
+    parentTaskId: Int
     status: String
+    subtasks: [Task]
     tag: Tag
     title: String
     user: User
@@ -55,7 +50,7 @@ const typeDefs = `#graphql
     description: String
     isUrgent: Int
     tagId: ID
-    projectId: ID
+    parentTaskId: ID
     status: String
     completeDatetime: DateTime
     dueDatetime: DateTime
@@ -70,7 +65,7 @@ const typeDefs = `#graphql
 
   type Query {
     task(id: ID!): Task
-    tasks(userId: ID!, projectId: ID, tagId: ID, fromDate: String, toDate: String): [Task]
+    tasks(userId: ID!, tagId: ID, fromDate: String, toDate: String): [Task]
 
     tag(id: ID!): Tag
     tags: [Tag]

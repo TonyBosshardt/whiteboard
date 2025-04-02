@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { hexToRGBA } from '../../util/ColorUtils.js';
+import DateHelpers from '../../util/DateHelpers.js';
 import WithLocalStorage from '../../util/WithLocalStorage.js';
-import { KEYBOARD_CODES } from '../../util/constants.js';
+import { KEYBOARD_CODES, TASK_STATUS } from '../../util/constants.js';
+import SubTaskContainer from './SubTaskContainer.js';
 import TagItem from './TagItem.js';
-import TaskItem from './TaskItem.js';
 
 const makeLocalStorageKey = (isoDate, tagId) => `${isoDate}_${tagId}`;
 
@@ -15,8 +16,8 @@ const TaskContent = ({
   keyedTags,
   tagId,
   tags,
-  completeTasks,
-  incompleteTasks,
+  handleUpdateTasks,
+  tasks,
   isDayMode,
   isoDate,
   getLocalValue,
@@ -24,8 +25,34 @@ const TaskContent = ({
   effectiveCurrentDatetime,
   selectedMode,
 }) => {
-  const totalTaskCount = completeTasks.length + incompleteTasks.length;
-  const tasksAllComplete = completeTasks.length === totalTaskCount;
+  const { [TASK_STATUS.COMPLETE]: completeTasks, [TASK_STATUS.INCOMPLETE]: incompleteTasks } =
+    _.groupBy(tasks, (t) => t.status);
+
+  const totalTaskCount = tasks.length;
+  const tasksAllComplete = (completeTasks || []).length === totalTaskCount;
+
+  const keyedTasks = _.keyBy(tasks, (t) => t.id);
+  const allTasksByParentTaskId = _.groupBy(tasks, (t) => t.parentTaskId);
+
+  const allSubTasksByIdForTodayCurrentDay = _.keyBy(
+    tasks.filter(
+      (t) =>
+        t.parentTaskId &&
+        DateHelpers.convertToDateTime(keyedTasks[t.parentTaskId]?.dueDatetime).toISODate() ===
+          DateHelpers.convertToDateTime(t.dueDatetime).toISODate(),
+    ),
+    (t) => t.id,
+  );
+
+  Object.keys(keyedTasks).forEach((id) => {
+    const childrenTasks = allTasksByParentTaskId[id];
+
+    if (childrenTasks) {
+      keyedTasks[id] = { ...keyedTasks[id], subtasks: childrenTasks };
+    }
+  });
+
+  const childrenTaskIds = new Set(Object.keys(allSubTasksByIdForTodayCurrentDay));
 
   const selectedTag = keyedTags[tagId];
 
@@ -87,34 +114,38 @@ const TaskContent = ({
         tag={selectedTag}
         tasksAllComplete={tasksAllComplete}
         totalTaskCount={totalTaskCount}
-        completedTaskCount={completeTasks.length}
+        completedTaskCount={(completeTasks || []).length}
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
         isDayMode={isDayMode}
-        incompleteTasks={incompleteTasks}
+        incompleteTasks={incompleteTasks || []}
       />
       {isExpanded ? (
         <div className="flex flex-col" style={{ marginBottom: '0.5em' }}>
-          {_.sortBy(incompleteTasks, (ic) => -ic.isUrgent).map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              isDayMode={isDayMode}
-              tags={tags}
-              selectedMode={selectedMode}
-              effectiveCurrentDatetime={effectiveCurrentDatetime}
-            />
-          ))}
-          {completeTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              isDayMode={isDayMode}
-              tags={tags}
-              selectedMode={selectedMode}
-              effectiveCurrentDatetime={effectiveCurrentDatetime}
-            />
-          ))}
+          {_.sortBy(
+            tasks.filter((t) => !childrenTaskIds.has(t.id)),
+            [(t) => t.status === TASK_STATUS.COMPLETE, (t) => -t.isUrgent],
+          ).map((task, idx) => {
+            const subTasks = _.sortBy(
+              allTasksByParentTaskId[task.id] || [],
+              (t) => t.status === TASK_STATUS.COMPLETE,
+            );
+            const key = `${task.id}-${idx}`; // yeah, i know
+
+            return (
+              <SubTaskContainer
+                key={key}
+                className="task-item"
+                task={task}
+                subTasks={subTasks}
+                isDayMode={isDayMode}
+                tags={tags}
+                selectedMode={selectedMode}
+                effectiveCurrentDatetime={effectiveCurrentDatetime}
+                handleUpdateTasks={handleUpdateTasks}
+              />
+            );
+          })}
         </div>
       ) : null}
     </div>

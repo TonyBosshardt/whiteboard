@@ -16,11 +16,7 @@ export const TASK_FIELDS = gql`
     estimatedCompletionTimeMinutes
     originalDueDatetime
     isUrgent
-    user {
-      id
-      firstName
-      lastName
-    }
+    parentTaskId
     title
     description
     tag {
@@ -28,7 +24,6 @@ export const TASK_FIELDS = gql`
     }
     dueDatetime
     status
-    insertDatetime
   }
 `;
 

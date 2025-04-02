@@ -2,7 +2,21 @@ import CaseUtils from './util/CaseUtils.js';
 
 const resolvers = {
   Task: {
-    id: ({ taskId }, args, { dbConnection }) => taskId,
+    id: ({ taskId }) => taskId,
+    parentTask: ({ parentTaskId }, args, { dbConnection }) =>
+      dbConnection('task')
+        .where('task_id', parentTaskId)
+        .then((rows) => {
+          const [row] = CaseUtils.toCamelCase(rows);
+
+          return row;
+        }),
+    subtasks: ({ taskId }, args, { dbConnection }) =>
+      dbConnection('task')
+        .where('parent_task_id', taskId)
+        .then((rows) => {
+          return CaseUtils.toCamelCase(rows);
+        }),
     tag: ({ tagId }, args, { dbConnection }) =>
       dbConnection('tag')
         .where('tag_id', tagId)
@@ -26,7 +40,7 @@ const resolvers = {
     id: ({ userId }) => userId,
   },
   Query: {
-    task: (obj, { id }, { dbConnection }, info) =>
+    task: (obj, { id }, { dbConnection }) =>
       dbConnection('task')
         .where('task_id', id)
         .then((rows) => {
@@ -34,7 +48,7 @@ const resolvers = {
 
           return row;
         }),
-    tasks: (obj, { userId, projectId, tagId, fromDate, toDate }, { dbConnection }) => {
+    tasks: (obj, { userId, fromDate, toDate }, { dbConnection }) => {
       const baseQuery = dbConnection('task').where('user_id', userId).where('is_deleted', 0);
 
       if (fromDate) {
@@ -52,7 +66,7 @@ const resolvers = {
         .select('*')
         .from('tag')
         .then((rows) => CaseUtils.toCamelCase(rows)),
-    user({ userId }) {},
+    user() {},
   },
   Mutation: {
     tasksCreate: async (obj, { input }, { dbConnection }) => {

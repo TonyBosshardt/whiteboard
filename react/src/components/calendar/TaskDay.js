@@ -5,7 +5,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 
 import { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
-import { DRAG_ITEM_TYPES, TASK_STATUS } from '../../util/constants.js';
+import { DRAG_ITEM_TYPES } from '../../util/constants.js';
 import TaskContent from './TaskContent.js';
 import TaskDayHeader from './TaskDayHeader.js';
 import { TASKS_UPDATE } from './mutations.js';
@@ -95,23 +95,18 @@ const TaskDay = ({
           .map((tagId) => {
             const tasks = tasksByTagId[tagId];
 
-            const {
-              [TASK_STATUS.COMPLETE]: completeTasks,
-              [TASK_STATUS.INCOMPLETE]: incompleteTasks,
-            } = _.groupBy(tasks, (t) => t.status);
-
             return (
               <TaskContent
                 key={tagId}
                 isoDate={isoDate}
                 keyedTags={keyedTags}
                 tagId={tagId}
-                completeTasks={completeTasks || []}
-                incompleteTasks={incompleteTasks || []}
+                tasks={tasks}
                 isDayMode={isDayMode}
                 tags={tags}
                 selectedMode={selectedMode}
                 effectiveCurrentDatetime={effectiveCurrentDatetime}
+                handleUpdateTasks={handleUpdateTasks}
               />
             );
           })}

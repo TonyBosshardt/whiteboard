@@ -136,6 +136,11 @@ $DEFAULT_TRANSITION_MS: 60ms;
             border-color: $ROW_HOVER_BORDER_COLOR_FULL;
             background-color: $ROW_HOVER_BACKGROUND_COLOR_LIGHT;
         }
+
+        &.can-drop {
+            outline: 2px solid white;
+            border-radius: $ROUNDED_CORNER;
+        }
     }
 
     .task-item:active {
@@ -168,6 +173,25 @@ $DEFAULT_TRANSITION_MS: 60ms;
 
         &.open {
             transform: rotate(90deg);
+        }
+    }
+
+    .expand-button {
+        .ui.button {
+            transition: transform $DEFAULT_TRANSITION_MS ease-in;
+            background: transparent;
+            border: 1px solid grey;
+
+            &.open {
+                transform: rotate(90deg);
+            }
+        }
+
+        .ui.button:hover {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        .ui.button:active {
+            background-color: rgba(0, 0, 0, 0.25);
         }
     }
 
