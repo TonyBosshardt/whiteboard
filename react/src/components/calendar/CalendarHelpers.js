@@ -2,7 +2,6 @@ import _ from 'lodash';
 
 import DateHelpers from '../../util/DateHelpers.js';
 
-const TODAY = DateHelpers.getCurrentISODate();
 const DAYS_IN_WEEK = 7;
 
 export const MODES = {
@@ -60,6 +59,7 @@ const _padFront = ({ firstDate, startDateForRange }) => {
 };
 
 const _calculateEffectiveWeeks = ({ selectedMode, isDayMode, effectiveCurrentDatetime }) => {
+  const currentIsoDate = DateHelpers.getCurrentISODate();
   const effectiveMonthIdx = effectiveCurrentDatetime.toFormat('L');
   const effectiveYear = effectiveCurrentDatetime.toFormat('yyyy');
 
@@ -72,7 +72,7 @@ const _calculateEffectiveWeeks = ({ selectedMode, isDayMode, effectiveCurrentDat
 
     const asIso = dateObj.toISODate();
 
-    return { dateTime: dateObj, isoDate: asIso, isToday: asIso === TODAY };
+    return { dateTime: dateObj, isoDate: asIso, isToday: asIso === currentIsoDate };
   });
 
   if (isDayMode) {
@@ -109,7 +109,7 @@ const _calculateEffectiveWeeks = ({ selectedMode, isDayMode, effectiveCurrentDat
 export const loadEffectiveWeeks = _.memoize(
   _calculateEffectiveWeeks,
   ({ selectedMode, isDayMode, effectiveCurrentDatetime }) =>
-    `${selectedMode}-${isDayMode}-${effectiveCurrentDatetime.toISODate()}`,
+    `${selectedMode}-${isDayMode}-${effectiveCurrentDatetime.toISODate()}-${DateHelpers.getCurrentISODate()}`,
 );
 
 export const resolveFirstDate = (chunkedByWeek) => _.first(_.first(chunkedByWeek));

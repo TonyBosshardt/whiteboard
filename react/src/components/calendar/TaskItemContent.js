@@ -41,6 +41,7 @@ const TaskItemContent = ({
   isExpanded,
   setIsExpanded,
   isValidOver,
+  onToggleComplete,
 }) => (
   <div
     id={taskId}
@@ -57,9 +58,17 @@ const TaskItemContent = ({
       'can-drop': isValidOver,
     })}
     style={{ cursor: isDragging && 'grabbing' }}
-    onClick={async ({ nativeEvent: { metaKey, ctrlKey } }) => {
+    onClick={async (event) => {
+      const {
+        nativeEvent: { metaKey, ctrlKey, altKey },
+      } = event;
+
       if (metaKey || ctrlKey) {
         await handleDuplicateTask();
+      } else if (altKey && parentTaskId) {
+        await handleUpdateTask({ parentTaskId: null });
+      } else if (event.no) {
+        /** */
       } else {
         setPopupOpen(true);
         setIsQuickEditTitle(true);
@@ -76,19 +85,21 @@ const TaskItemContent = ({
         }}
       />
     )}
-    <div
-      className="flex"
-      style={{
-        margin: 'auto 0.5em auto 0',
-      }}
-    >
+    <div className="flex" style={{ margin: 'auto 0.5em auto 0' }}>
       <Checkbox
         checked={isComplete}
         onChange={(e) => {
           e.stopPropagation();
+          const nextIsComplete = !isComplete;
+
+          if (onToggleComplete) {
+            onToggleComplete(nextIsComplete);
+            return;
+          }
+
           const payload = {};
 
-          if (!isComplete) {
+          if (nextIsComplete) {
             payload.status = TASK_STATUS.COMPLETE;
             payload.completeDatetime = DateHelpers.dateTimeToSQLFormat(
               DateHelpers.getCurrentDatetime(),

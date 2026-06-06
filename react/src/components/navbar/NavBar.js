@@ -16,6 +16,7 @@ import {
   resolveLastDate,
 } from '../calendar/CalendarHelpers.js';
 import { GET_TAGS, GET_TASKS } from '../calendar/queries.js';
+import { registerTaskCreateUndo } from '../calendar/taskUndoManager.js';
 import DateSelector from './DateSelector.js';
 import TagManager from './TagManager.js';
 
@@ -29,6 +30,10 @@ const QUICK_CREATE_TASK = gql`
   }
 `;
 
+export const resolveBacklogQueryVariables = () => ({
+  userId: '1',
+});
+
 export const resolveQueryVariables = ({ selectedMode, effectiveCurrentDatetime, isDayMode }) => {
   const chunkedByWeek = loadEffectiveWeeks({
     selectedMode,
@@ -37,7 +42,7 @@ export const resolveQueryVariables = ({ selectedMode, effectiveCurrentDatetime, 
   });
 
   return {
-    userId: '1',
+    ...resolveBacklogQueryVariables(),
     fromDate: resolveFirstDate(chunkedByWeek).isoDate,
     toDate: resolveLastDate(chunkedByWeek).dateTime.plus({ days: 1 }).toISODate(),
   };
@@ -84,7 +89,7 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
       .set({ hour: 12, minute: 0 })
       .toFormat(SQL_DATE_TIME_FORMAT);
 
-    await onCreateTask({
+    const response = await onCreateTask({
       variables: {
         input: {
           title: quickAddText,
@@ -94,6 +99,10 @@ const NavBar = ({ getQueryParamValue, replaceQueryParamValue, setQueryParamObjec
           userId: '1',
         },
       },
+    });
+
+    registerTaskCreateUndo({
+      ids: response?.data?.tasksCreate?.map((task) => task.id) || [],
     });
 
     setIsLoading(false);

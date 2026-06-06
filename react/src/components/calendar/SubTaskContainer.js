@@ -40,6 +40,7 @@ const SubTaskContainer = ({
       <TaskItem
         key={task.id}
         task={task}
+        subTasks={subTasks}
         isDayMode={isDayMode}
         tags={tags}
         selectedMode={selectedMode}
@@ -55,6 +56,7 @@ const SubTaskContainer = ({
             key={subTask.id}
             isSubTask
             task={subTask}
+            siblingSubTasks={subTasks}
             isDayMode={isDayMode}
             tags={tags}
             selectedMode={selectedMode}

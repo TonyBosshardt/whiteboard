@@ -18,10 +18,14 @@ const loadEffectiveHeaders = ({ effectiveWindowSize, effectiveCurrentDatetime })
   return DAYS;
 };
 
-const WeekdayHeader = ({ effectiveWindowSize, effectiveCurrentDatetime }) => (
+const WeekdayHeader = ({ effectiveWindowSize, effectiveCurrentDatetime, dayWeights = [] }) => (
   <div className="flex">
-    {loadEffectiveHeaders({ effectiveCurrentDatetime, effectiveWindowSize }).map((d) => (
-      <span key={d} className={classNames('weekday-header')}>
+    {loadEffectiveHeaders({ effectiveCurrentDatetime, effectiveWindowSize }).map((d, idx) => (
+      <span
+        key={d}
+        className={classNames('weekday-header')}
+        style={{ flex: `${dayWeights[idx] || 1} 1 0` }}
+      >
         {d}
       </span>
     ))}

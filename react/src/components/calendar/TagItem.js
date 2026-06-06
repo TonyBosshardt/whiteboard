@@ -11,6 +11,8 @@ const TagItem = ({
   isDayMode,
   completedTaskCount,
   incompleteTasks,
+  allTasks,
+  onDoubleClickHeader,
 }) => {
   const { title, displayColor } = tag;
 
@@ -25,6 +27,8 @@ const TagItem = ({
       completedTaskCount={completedTaskCount}
       totalTaskCount={totalTaskCount}
       incompleteTasks={incompleteTasks}
+      allTasks={allTasks}
+      onDoubleClickHeader={onDoubleClickHeader}
     />
   );
 };

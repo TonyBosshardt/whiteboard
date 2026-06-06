@@ -1,16 +1,22 @@
 import { useMutation } from '@apollo/client';
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Popup } from 'semantic-ui-react';
 
 import DateHelpers from '../../util/DateHelpers.js';
-import { DRAG_ITEM_TYPES, KEYBOARD_CODES, TASK_STATUS } from '../../util/constants.js';
-import { resolveQueryVariables } from '../navbar/NavBar.js';
+import {
+  DRAG_ITEM_TYPES,
+  KEYBOARD_CODES,
+  SPECIAL_TAG_IDS,
+  TASK_STATUS,
+} from '../../util/constants.js';
+import { resolveBacklogQueryVariables, resolveQueryVariables } from '../navbar/NavBar.js';
 import TaskItemContent from './TaskItemContent.js';
 import { CREATE_TASK, TASK_UPDATE } from './mutations.js';
 import { GET_TASKS } from './queries.js';
 import TaskItemPopupContent from './task/TaskItemPopupContent.js';
+import { registerTaskCreateUndo, registerTaskUpdateUndo } from './taskUndoManager.js';
 
 const POPUP_POSITIONS = {
   TOP_LEFT: 'top left',
@@ -40,6 +46,8 @@ const canDropIncomingItem = ({
 
 const TaskItem = ({
   task,
+  subTasks = [],
+  siblingSubTasks = [],
   isDayMode,
   tags,
   effectiveCurrentDatetime,
@@ -52,23 +60,44 @@ const TaskItem = ({
 }) => {
   const { id, title, estimatedCompletionTimeMinutes, status, isUrgent, parentTaskId } = task;
   const isComplete = status === TASK_STATUS.COMPLETE;
+  const effectiveTagId = task.tag?.id === SPECIAL_TAG_IDS.UNTAGGED ? null : task.tag?.id;
 
   const ref = useRef(null);
 
-  const [onUpdateTask] = useMutation(TASK_UPDATE);
+  const [onUpdateTask] = useMutation(TASK_UPDATE, {
+    refetchQueries: [
+      {
+        query: GET_TASKS,
+        variables: resolveQueryVariables({
+          selectedMode,
+          effectiveCurrentDatetime,
+          isDayMode,
+        }),
+      },
+      {
+        query: GET_TASKS,
+        variables: resolveBacklogQueryVariables(),
+      },
+    ],
+    awaitRefetchQueries: true,
+  });
   const [onCreateTask] = useMutation(CREATE_TASK);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickEditTitle, setIsQuickEditTitle] = useState(false);
   const [effectivePopupPosition, setEffectivePopupPosition] = useState(POPUP_POSITIONS.LEFT_CENTER);
   const [popupOpen, _setPopupOpen] = useState(false);
+  const dragItemIds = useMemo(() => [id, ...subTasks.map((st) => st.id)], [id, subTasks]);
 
-  const [{ isDragging }, dragRef] = useDrag(() => ({
-    type: DRAG_ITEM_TYPES.TASK,
-    canDrag: () => !isComplete,
-    item: { ids: [id], parentTaskId, tagId: task.tag.id },
-    collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
-  }));
+  const [{ isDragging }, dragRef] = useDrag(
+    () => ({
+      type: DRAG_ITEM_TYPES.TASK,
+      canDrag: () => !isComplete,
+      item: { ids: dragItemIds, parentTaskId, tagId: task.tag?.id },
+      collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+    }),
+    [isComplete, dragItemIds, parentTaskId, task.tag?.id],
+  );
 
   const [currentHoveringState, dropRef] = useDrop(() => ({
     accept: [DRAG_ITEM_TYPES.TASK],
@@ -124,7 +153,9 @@ const TaskItem = ({
   };
 
   const handleUpdateTask = async (input, mutationProps = {}) => {
-    _wrapMutation(
+    registerTaskUpdateUndo({ ids: [id], input });
+
+    return _wrapMutation(
       onUpdateTask({
         variables: {
           id,
@@ -135,18 +166,56 @@ const TaskItem = ({
     );
   };
 
-  const handleDuplicateTask = () => {
-    const dueDatetime = DateHelpers.dateTimeToSQLFormat(DateHelpers.getCurrentDatetime());
+  const handleToggleComplete = async (nextIsComplete) => {
+    const payload = nextIsComplete
+      ? {
+          status: TASK_STATUS.COMPLETE,
+          completeDatetime: DateHelpers.dateTimeToSQLFormat(DateHelpers.getCurrentDatetime()),
+        }
+      : {
+          status: TASK_STATUS.INCOMPLETE,
+          completeDatetime: null,
+        };
 
+    const parentWithChildren = !parentTaskId && subTasks.length > 0;
+    const childTask = !!parentTaskId;
+
+    if (parentWithChildren && handleUpdateTasks) {
+      const childIds = subTasks.map((st) => st.id);
+      const ids = [id, ...childIds];
+      await handleUpdateTasks(ids, payload);
+      return;
+    }
+
+    if (childTask && handleUpdateTasks) {
+      const allSiblingsCompleteAfterToggle = siblingSubTasks.every((st) =>
+        st.id === id ? nextIsComplete : st.status === TASK_STATUS.COMPLETE,
+      );
+
+      if (!nextIsComplete) {
+        await handleUpdateTasks([id, parentTaskId], payload);
+        return;
+      }
+
+      if (allSiblingsCompleteAfterToggle) {
+        await handleUpdateTasks([id, parentTaskId], payload);
+        return;
+      }
+    }
+
+    await handleUpdateTask(payload);
+  };
+
+  const handleDuplicateTask = () => {
     return _wrapMutation(
       onCreateTask({
         variables: {
           input: [
             {
               title,
-              originalDueDatetime: dueDatetime,
-              dueDatetime,
-              tagId: task.tag.id,
+              originalDueDatetime: task.originalDueDatetime,
+              dueDatetime: task.dueDatetime,
+              tagId: effectiveTagId,
               parentTaskId,
               userId: '1',
             },
@@ -161,7 +230,17 @@ const TaskItem = ({
               isDayMode,
             }),
           },
+          {
+            query: GET_TASKS,
+            variables: resolveBacklogQueryVariables(),
+          },
         ],
+      }).then((response) => {
+        registerTaskCreateUndo({
+          ids: response?.data?.tasksCreate?.map((createdTask) => createdTask.id) || [],
+        });
+
+        return response;
       }),
     );
   };
@@ -197,6 +276,7 @@ const TaskItem = ({
           subTaskCount={subTaskCount}
           isExpanded={isExpanded}
           setIsExpanded={setIsExpanded}
+          onToggleComplete={handleToggleComplete}
           isValidOver={
             currentHoveringState.isOver &&
             canDropIncomingItem({

@@ -24,6 +24,7 @@ export const KEYBOARD_CODES = {
   LEFT_ARROW: 'left',
   E: 'e',
   META: 'Meta', // Command key on Mac
+  ALT: 'Alt',
 };
 
 export const STANDARD_COLOR_LIST = [
@@ -45,4 +46,8 @@ export const STANDARD_COLOR_LIST = [
 export const DRAG_ITEM_TYPES = {
   TASK: 'task',
   TAG_DAY: 'tagDay',
+};
+
+export const SPECIAL_TAG_IDS = {
+  UNTAGGED: 'NONE',
 };

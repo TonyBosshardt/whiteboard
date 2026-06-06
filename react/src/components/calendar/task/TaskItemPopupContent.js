@@ -28,6 +28,8 @@ const TaskItemPopupContent = ({
     estimatedCompletionTimeMinutes,
     isUrgent,
   } = task;
+  const hasDueDatetime = !!dueDatetime;
+  const scheduleFrom = dueDatetime || originalDueDatetime || DateHelpers.getCurrentDatetime();
 
   return (
     <div className="flex flex-col" style={{ color: 'whitesmoke' }}>
@@ -125,7 +127,9 @@ const TaskItemPopupContent = ({
             className="text-white"
             style={{ fontSize: '0.9em', margin: 0, padding: '0 0 0 0.75em' }}
           >
-            {DateHelpers.convertToDateTime(originalDueDatetime).toFormat('LLL dd')}
+            {originalDueDatetime
+              ? DateHelpers.convertToDateTime(originalDueDatetime).toFormat('LLL dd')
+              : 'Backlog'}
           </Header>
         </div>
         <div className="flex flex-col" style={{ margin: 'auto auto 0 auto' }}>
@@ -175,35 +179,70 @@ const TaskItemPopupContent = ({
         </Button.Group>
         <div style={{ margin: 'auto 0 0 auto' }}>
           <Button.Group size="tiny">
-            <Button
-              secondary
-              style={{ padding: '0.75em' }}
-              onClick={() =>
-                handleUpdateTask({
-                  dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
-                    .set({ hour: 12, minute: 0 })
-                    .plus({ days: -1 })
-                    .toFormat(SQL_DATE_TIME_FORMAT),
-                })
-              }
-            >
-              <Icon name="left arrow" />
-              Move back
-            </Button>
-            <Button
-              primary
-              style={{ padding: '0.75em' }}
-              onClick={() =>
-                handleUpdateTask({
-                  dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
-                    .set({ hour: 12, minute: 0 })
-                    .plus({ days: 1 })
-                    .toFormat(SQL_DATE_TIME_FORMAT),
-                })
-              }
-            >
-              Move forward <Icon name="right arrow" />
-            </Button>
+            {hasDueDatetime ? (
+              <>
+                <Button
+                  secondary
+                  style={{ padding: '0.75em' }}
+                  onClick={() =>
+                    handleUpdateTask({
+                      dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
+                        .set({ hour: 12, minute: 0 })
+                        .plus({ days: -1 })
+                        .toFormat(SQL_DATE_TIME_FORMAT),
+                    })
+                  }
+                >
+                  <Icon name="left arrow" />
+                  Move back
+                </Button>
+                <Button
+                  style={{ padding: '0.75em' }}
+                  onClick={() =>
+                    handleUpdateTask({
+                      dueDatetime: null,
+                    })
+                  }
+                >
+                  <Icon name="inbox" />
+                  Backlog
+                </Button>
+                <Button
+                  primary
+                  style={{ padding: '0.75em' }}
+                  onClick={() =>
+                    handleUpdateTask({
+                      dueDatetime: DateHelpers.convertToDateTime(dueDatetime)
+                        .set({ hour: 12, minute: 0 })
+                        .plus({ days: 1 })
+                        .toFormat(SQL_DATE_TIME_FORMAT),
+                    })
+                  }
+                >
+                  Move forward <Icon name="right arrow" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                primary
+                style={{ padding: '0.75em' }}
+                onClick={() =>
+                  handleUpdateTask({
+                    dueDatetime: DateHelpers.convertToDateTime(scheduleFrom)
+                      .set({ hour: 12, minute: 0 })
+                      .toFormat(SQL_DATE_TIME_FORMAT),
+                    originalDueDatetime:
+                      originalDueDatetime ||
+                      DateHelpers.convertToDateTime(scheduleFrom)
+                        .set({ hour: 12, minute: 0 })
+                        .toFormat(SQL_DATE_TIME_FORMAT),
+                  })
+                }
+              >
+                <Icon name="calendar plus outline" />
+                Schedule today
+              </Button>
+            )}
           </Button.Group>
         </div>
       </div>

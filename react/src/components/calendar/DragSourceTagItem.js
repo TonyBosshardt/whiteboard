@@ -15,21 +15,29 @@ const DragSourceTagItem = ({
   completedTaskCount,
   totalTaskCount,
   incompleteTasks,
+  allTasks,
+  onDoubleClickHeader,
 }) => {
   const incompleteTaskIds = incompleteTasks.map((t) => t.id);
+  const allTaskIds = allTasks.map((t) => t.id);
 
   const [, dragRef] = useDrag(
     () => ({
       type: DRAG_ITEM_TYPES.TAG_DAY,
-      canDrag: () => !tasksAllComplete,
-      item: { ids: incompleteTaskIds },
+      canDrag: () => !!allTaskIds.length,
+      item: { ids: incompleteTaskIds, allTaskIds },
       collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
     }),
-    [incompleteTaskIds],
+    [allTaskIds, incompleteTaskIds],
   );
 
   return (
-    <div className="flex tag-item-header" onClick={() => setIsExpanded(!isExpanded)} ref={dragRef}>
+    <div
+      className="flex tag-item-header"
+      onClick={() => setIsExpanded(!isExpanded)}
+      onDoubleClick={onDoubleClickHeader}
+      ref={dragRef}
+    >
       <Label
         size={isDayMode ? 'large' : 'small'}
         className={classNames('flex protected-text tag-item-label', {

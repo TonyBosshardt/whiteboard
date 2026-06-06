@@ -6,9 +6,12 @@ import { useDrop } from 'react-dnd';
 
 import { SQL_DATE_TIME_FORMAT } from '../../util/DateHelpers.js';
 import { DRAG_ITEM_TYPES } from '../../util/constants.js';
+import { resolveBacklogQueryVariables, resolveQueryVariables } from '../navbar/NavBar.js';
 import TaskContent from './TaskContent.js';
 import TaskDayHeader from './TaskDayHeader.js';
 import { TASKS_UPDATE } from './mutations.js';
+import { GET_TASKS } from './queries.js';
+import { registerTaskUpdateUndo } from './taskUndoManager.js';
 
 const TaskDay = ({
   dateTime,
@@ -22,6 +25,7 @@ const TaskDay = ({
   selectedMode,
   effectiveCurrentDatetime,
   onClickToday = () => {},
+  dayFlex = 1,
 }) => {
   const dayOfMonth = dateTime.toFormat('d');
   const dayStr = dateTime.toFormat('cccc');
@@ -29,15 +33,35 @@ const TaskDay = ({
   const hasTasksForToday = !!tasksForDate.length;
 
   const tasksByTagId = _.groupBy(tasksForDate, (t) => t.tag?.id || 'NONE');
-  const [onUpdateTasks] = useMutation(TASKS_UPDATE);
+  const resolveTagSortLabel = (tagId) => keyedTags[tagId]?.title || '';
+  const [onUpdateTasks] = useMutation(TASKS_UPDATE, {
+    refetchQueries: [
+      {
+        query: GET_TASKS,
+        variables: resolveQueryVariables({
+          selectedMode,
+          effectiveCurrentDatetime,
+          isDayMode,
+        }),
+      },
+      {
+        query: GET_TASKS,
+        variables: resolveBacklogQueryVariables(),
+      },
+    ],
+    awaitRefetchQueries: true,
+  });
 
-  const handleUpdateTasks = (taskIds, input) =>
-    onUpdateTasks({
+  const handleUpdateTasks = (taskIds, input) => {
+    registerTaskUpdateUndo({ ids: taskIds, input });
+
+    return onUpdateTasks({
       variables: {
         ids: taskIds,
         input,
       },
     });
+  };
 
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: [DRAG_ITEM_TYPES.TASK, DRAG_ITEM_TYPES.TAG_DAY],
@@ -64,6 +88,8 @@ const TaskDay = ({
       style={{
         outline: isOver && '2px solid white',
         borderRadius: isOver && '0.28em',
+        flex: `${dayFlex || 1} 1 0`,
+        width: 'auto',
       }}
       onClick={() => {
         if (hasTasksForToday) {
@@ -90,8 +116,8 @@ const TaskDay = ({
         })}
       >
         {Object.keys(keyedTags)
-          .filter((tagId) => tasksByTagId[tagId])
-          .sort((a, b) => keyedTags[a].title.localeCompare(keyedTags[b].title))
+          .filter((tagId) => tasksByTagId[tagId] && keyedTags[tagId])
+          .sort((a, b) => resolveTagSortLabel(a).localeCompare(resolveTagSortLabel(b)))
           .map((tagId) => {
             const tasks = tasksByTagId[tagId];
 

@@ -1,5 +1,39 @@
 import CaseUtils from './util/CaseUtils.js';
 
+const TASK_DATETIME_FIELDS = ['completeDatetime', 'dueDatetime', 'originalDueDatetime'];
+
+const normalizeDateTimeValue = (value) => {
+  if (value == null) return value;
+
+  if (value instanceof Date && !Number.isNaN(value.valueOf())) {
+    return value.toISOString().slice(0, 19).replace('T', ' ');
+  }
+
+  if (typeof value !== 'string') return value;
+
+  const trimmedValue = value.trim();
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  const isoMatch = trimmedValue.match(
+    /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/,
+  );
+
+  if (isoMatch) {
+    return `${isoMatch[1]} ${isoMatch[2]}`;
+  }
+
+  return value;
+};
+
+const normalizeTaskInput = (input) =>
+  Object.entries(input).reduce((acc, [key, value]) => {
+    acc[key] = TASK_DATETIME_FIELDS.includes(key) ? normalizeDateTimeValue(value) : value;
+    return acc;
+  }, {});
+
 const resolvers = {
   Task: {
     id: ({ taskId }) => taskId,
@@ -70,14 +104,17 @@ const resolvers = {
   },
   Mutation: {
     tasksCreate: async (obj, { input }, { dbConnection }) => {
-      const ids = await dbConnection.batchInsert('task', CaseUtils.toSnakeCase(input), 30);
+      const normalizedInput = input.map(normalizeTaskInput);
+      const ids = await dbConnection.batchInsert('task', CaseUtils.toSnakeCase(normalizedInput), 30);
 
       return dbConnection('task')
         .whereIn('task_id', ids)
         .then((rows) => CaseUtils.toCamelCase(rows));
     },
     taskUpdate: async (obj, { input, id }, { dbConnection }) => {
-      await dbConnection('task').where('task_id', '=', id).update(CaseUtils.toSnakeCase(input));
+      await dbConnection('task')
+        .where('task_id', '=', id)
+        .update(CaseUtils.toSnakeCase(normalizeTaskInput(input)));
 
       return dbConnection('task')
         .where('task_id', id)
@@ -88,7 +125,9 @@ const resolvers = {
         });
     },
     tasksUpdate: async (obj, { input, ids }, { dbConnection }) => {
-      await dbConnection('task').whereIn('task_id', ids).update(CaseUtils.toSnakeCase(input));
+      await dbConnection('task')
+        .whereIn('task_id', ids)
+        .update(CaseUtils.toSnakeCase(normalizeTaskInput(input)));
 
       return dbConnection('task')
         .whereIn('task_id', ids)
